@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
+import '../services/mood_service.dart';
 
 /// Mood tracker row with 4 basic emoji faces and pastel backgrounds.
 class MoodRow extends StatelessWidget {
@@ -103,35 +104,7 @@ class _MoodButton extends StatelessWidget {
   }
 
   Color _getMoodColor() {
-    // Use theme-aware colors that work well in both light and dark modes
-    if (themeProvider.themeMode == ThemeMode.dark) {
-      // Dark mode colors - subtle transparent backgrounds
-      switch (mood) {
-        case 'happy':
-          return const Color(0xFF2196F3).withOpacity(0.25); // Light blue
-        case 'neutral':
-          return const Color(0xFF9C27B0).withOpacity(0.25); // Light purple
-        case 'sad':
-          return const Color(0xFFE91E63).withOpacity(0.25); // Light pink
-        case 'angry':
-          return const Color(0xFFFF9800).withOpacity(0.25); // Light orange
-        default:
-          return themeProvider.cardColor.withOpacity(0.15);
-      }
-    } else {
-      // Light mode colors - light pastel backgrounds
-      switch (mood) {
-        case 'happy':
-          return const Color(0xFFE3F2FD); // Soft light blue
-        case 'neutral':
-          return const Color(0xFFF3E5F5); // Soft light purple
-        case 'sad':
-          return const Color(0xFFFCE4EC); // Soft light pink
-        case 'angry':
-          return const Color(0xFFFFF8E1); // Soft light yellow/cream
-        default:
-          return themeProvider.cardColor;
-      }
-    }
+    // Use the same colors as MoodService for consistency
+    return MoodService.getColor(mood, themeProvider);
   }
 } 

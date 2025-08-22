@@ -161,6 +161,7 @@ class SettingsPanel extends StatelessWidget {
                   },
                   tooltip: 'Color Palette',
                 ),
+
               ],
             ),
           ),

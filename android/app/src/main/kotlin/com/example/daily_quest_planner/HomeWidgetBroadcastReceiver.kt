@@ -121,12 +121,24 @@ class HomeWidgetBroadcastReceiver : AppWidgetProvider() {
     private fun parseWidgetData(data: String): List<WidgetItem> {
         val items = mutableListOf<WidgetItem>()
         try {
+            android.util.Log.d("WidgetProvider", "Parsing widget data: $data")
+            
             // Parse the Flutter data format
             // Data format: [{text: "10:00 Meeting with Mark", isTask: false, done: false}, ...]
             val cleanData = data.trim()
             if (cleanData.startsWith("[") && cleanData.endsWith("]")) {
                 val content = cleanData.substring(1, cleanData.length - 1)
-                val itemStrings = content.split("}, {")
+                
+                // Split by "}, {" to get individual items
+                val itemStrings = if (content.contains("}, {")) {
+                    content.split("}, {")
+                } else if (content.isNotEmpty()) {
+                    listOf(content)
+                } else {
+                    emptyList()
+                }
+                
+                android.util.Log.d("WidgetProvider", "Found ${itemStrings.size} item strings")
                 
                 for (itemString in itemStrings) {
                     val cleanItem = itemString.replace("{", "").replace("}", "")
@@ -145,13 +157,17 @@ class HomeWidgetBroadcastReceiver : AppWidgetProvider() {
                     
                     if (text.isNotEmpty()) {
                         items.add(WidgetItem(text, isTask))
+                        android.util.Log.d("WidgetProvider", "Added item: $text")
                     }
                 }
+            } else {
+                android.util.Log.w("WidgetProvider", "Invalid data format: $data")
             }
             
-            android.util.Log.d("WidgetProvider", "Parsed ${items.size} items")
+            android.util.Log.d("WidgetProvider", "Successfully parsed ${items.size} items")
         } catch (e: Exception) {
             android.util.Log.e("WidgetProvider", "Error parsing widget data: ${e.message}")
+            e.printStackTrace()
         }
         return items
     }

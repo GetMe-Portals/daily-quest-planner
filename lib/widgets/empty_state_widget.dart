@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 
 class EmptyStateWidget extends StatelessWidget {
@@ -23,7 +24,7 @@ class EmptyStateWidget extends StatelessWidget {
                 width: 200,
                 height: 200,
                 child: Image.asset(
-                  'assets/animations/no_plan.gif',
+                  _getAnimationForTheme(themeProvider),
                   fit: BoxFit.contain,
                 ),
               ),
@@ -44,8 +45,8 @@ class EmptyStateWidget extends StatelessWidget {
               // Encouraging text
               Text(
                 _getEncouragingMessage(),
-                style: TextStyle(
-                  fontSize: 14,
+                style: GoogleFonts.dancingScript(
+                  fontSize: 16,
                   color: themeProvider.textColorSecondary,
                 ),
                 textAlign: TextAlign.center,
@@ -79,7 +80,24 @@ class EmptyStateWidget extends StatelessWidget {
       case 'yearly':
         return 'Start planning your year by adding tasks, routines, or events!';
       default:
-        return 'Start planning your day by adding tasks, routines, or events!';
+        return 'Start Planning Your Day';
+    }
+  }
+
+  String _getAnimationForTheme(ThemeProvider themeProvider) {
+    // Get the theme name based on the selected color
+    final selectedColor = themeProvider.selectedThemeColor;
+    
+    if (selectedColor == Colors.teal) {
+      return 'assets/animations/no_plan_teal.gif';
+    } else if (selectedColor == Colors.pink) {
+      return 'assets/animations/no_plan_pink.gif';
+    } else if (selectedColor == CustomMaterialColor.burgundy) {
+      return 'assets/animations/no_plan_burgundy.gif';
+    } else if (selectedColor == CustomMaterialColor.slate) {
+      return 'assets/animations/no_plan_slate.gif';
+    } else {
+      return 'assets/animations/no_plan_teal.gif'; // Default to teal
     }
   }
 } 

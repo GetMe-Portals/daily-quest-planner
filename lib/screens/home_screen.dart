@@ -19,8 +19,15 @@ import 'dart:convert';
 import 'package:confetti/confetti.dart';
 import 'package:vibration/vibration.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_theme.dart' show CustomMaterialColor;
 import '../services/widget_service.dart';
 import '../services/notification_service.dart';
+import '../services/emoji_service.dart';
+import '../widgets/dashboard_view.dart';
+import '../widgets/emoji_suggestions.dart';
+import '../widgets/weekly_view.dart';
+import '../widgets/donut_chart.dart';
+import '../widgets/task_row_widget.dart';
 
 /// The main home screen for the Daily Quest Planner app.
 /// Uses a responsive layout for mobile and tablet.
@@ -37,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<PlannerItem> _plannerItems = [];
 
   String _selectedTimeRange = 'today'; // 'today', 'weekly', 'monthly', 'yearly', 'custom'
+  bool _showViewMenu = false;
   GlobalKey<AnimatedListState> _incompleteListKey = GlobalKey<AnimatedListState>();
   GlobalKey<AnimatedListState> _completedListKey = GlobalKey<AnimatedListState>();
   String? _flashKey;
@@ -46,6 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _showMicFab = false;
   double _soundLevel = 0.0;
   Map<String, String> _moodsByDate = {};
+  Map<String, DateTime> _completionTimestamps = {}; // Track when each date was completed
+  Set<String> _confettiShownDates = {}; // Track dates where confetti has been shown
   late ConfettiController _confettiController;
   bool _showCompletionMessage = false;
   double _lastProgress = 0.0;
@@ -53,6 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isNoteExpanded = false; // Track if note is expanded
   String _noteText = ''; // Store the note text
   late TextEditingController _noteController; // Persistent controller for note text field
+  bool _showImportantOnly = false; // NEW: filter for important tasks only
+  DateTime? _expandedDate; // Track which date should be expanded in weekly view
   
   // Separate expansion states for each day box
   bool _isMondayExpanded = false;
@@ -78,6 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadPlannerItems();
     _speech = stt.SpeechToText();
     _loadMoods();
+    _loadCompletionTimestamps();
+    _loadConfettiFlags();
     _confettiController = ConfettiController(duration: const Duration(seconds: 2));
     _noteController = TextEditingController();
   }
@@ -100,6 +114,22 @@ class _HomeScreenState extends State<HomeScreen> {
     
     // Schedule reminders for existing items
     await _scheduleExistingReminders(items);
+  }
+
+  // Debug method to manually refresh widget
+  Future<void> _refreshWidget() async {
+    try {
+      print('🔄 [HomeScreen] Manual widget refresh requested');
+      await WidgetService.refreshWidget();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Widget refresh triggered'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    } catch (e) {
+      print('🔄 [HomeScreen] Failed to refresh widget: $e');
+    }
   }
   
   Future<void> _scheduleExistingReminders(List<PlannerItem> items) async {
@@ -148,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
     print('🔔 [HomeScreen] Scheduled: $scheduledCount, Skipped: $skippedCount');
   }
 
-  void _showContextAwareAddForm() {
+  void _showContextAwareAddForm({DateTime? selectedDate}) {
     // Since we only have routines now, always set to routine type
     int initialType = 1; // Routine
 
@@ -165,8 +195,9 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Padding(
             padding: const EdgeInsets.only(top: 32.0),
             child: AddPlannerItemForm(
-              initialDate: _selectedDate,
+              initialDate: selectedDate ?? _selectedDate,
               initialType: initialType, // Pass the context-aware initial type
+              existingItems: _plannerItems, // Pass existing items for duplicate validation
               onSave: (item) async {
                 print('🔔 [HomeScreen] === CREATING NEW ITEM ===');
                 print('🔔 [HomeScreen] Item: "${item.name}"');
@@ -178,6 +209,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Add item to the list
                 final updatedItems = List<PlannerItem>.from(_plannerItems);
                 updatedItems.add(item);
+                
+                // Reset confetti flag for this date since a new plan was added
+                final dateKey = '${item.date.year}-${item.date.month.toString().padLeft(2, '0')}-${item.date.day.toString().padLeft(2, '0')}';
+                _confettiShownDates.remove(dateKey);
+                _saveConfettiFlags();
                 
                 // Save to storage
                 await PlannerStorage.save(updatedItems);
@@ -341,36 +377,227 @@ class _HomeScreenState extends State<HomeScreen> {
     await prefs.setString('moods_by_date', jsonEncode(_moodsByDate));
   }
 
-  void _onMoodSelected(int? moodIndex, String emoji) {
-    final key = DateFormat('yyyy-MM-dd').format(_selectedDate);
+  Future<void> _saveCompletionTimestamps() async {
+    final prefs = await SharedPreferences.getInstance();
+    final timestampsMap = _completionTimestamps.map((key, value) => MapEntry(key, value.toIso8601String()));
+    await prefs.setString('completion_timestamps', jsonEncode(timestampsMap));
+  }
+
+  Future<void> _loadCompletionTimestamps() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString('completion_timestamps');
+    if (data != null) {
+      final timestampsMap = jsonDecode(data) as Map<String, dynamic>;
+      _completionTimestamps = timestampsMap.map((key, value) => MapEntry(key, DateTime.parse(value as String)));
+    }
+  }
+
+  Future<void> _saveConfettiFlags() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('confetti_shown_dates', jsonEncode(_confettiShownDates.toList()));
+  }
+
+  Future<void> _loadConfettiFlags() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString('confetti_shown_dates');
+    if (data != null) {
+      final List<dynamic> datesList = jsonDecode(data);
+      _confettiShownDates = datesList.map((date) => date as String).toSet();
+    }
+  }
+
+  void _onMoodSelected(int? moodIndex, String moodType, [DateTime? specificDate]) {
+    final dateToUse = specificDate ?? _selectedDate;
+    final key = DateFormat('yyyy-MM-dd').format(dateToUse);
     setState(() {
-      if (moodIndex == null) {
+      if (moodIndex == null || moodType.isEmpty) {
         _moodsByDate.remove(key);
       } else {
+        // Convert mood type to emoji for storage
+        final emoji = _moodTypeToEmoji(moodType);
         _moodsByDate[key] = emoji;
       }
     });
     _saveMoods();
+    
+    // Show motivational message if mood was selected
+    if (moodType.isNotEmpty) {
+      _showMotivationalMessage(moodType);
+    }
+  }
+
+  Map<DateTime, String> _convertMoodDataForDashboard() {
+    final Map<DateTime, String> convertedMoodData = {};
+    
+    for (final entry in _moodsByDate.entries) {
+      try {
+        final date = DateFormat('yyyy-MM-dd').parse(entry.key);
+        // Convert emoji to mood type
+        final moodType = _emojiToMoodType(entry.value);
+        if (moodType.isNotEmpty) {
+          convertedMoodData[date] = moodType;
+        }
+      } catch (e) {
+        // Skip invalid date formats
+        continue;
+      }
+    }
+    
+    return convertedMoodData;
+  }
+
+  String _emojiToMoodType(String emoji) {
+    switch (emoji) {
+      case '😊':
+        return 'happy';
+      case '😐':
+        return 'neutral';
+      case '😢':
+        return 'sad';
+      case '😠':
+        return 'angry';
+      default:
+        return '';
+    }
+  }
+
+  String _moodTypeToEmoji(String moodType) {
+    switch (moodType) {
+      case 'happy':
+        return '😊';
+      case 'neutral':
+        return '😐';
+      case 'sad':
+        return '😢';
+      case 'angry':
+        return '😠';
+      default:
+        return '';
+    }
+  }
+
+  String? _getSelectedMoodType() {
+    final key = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    final emoji = _moodsByDate[key];
+    if (emoji != null && emoji.isNotEmpty) {
+      return _emojiToMoodType(emoji);
+    }
+    return null;
+  }
+
+  String _getMotivationalMessage(String moodType) {
+    switch (moodType) {
+      case 'happy':
+        return '🌟 Keep that positive energy flowing!';
+      case 'neutral':
+        return '✨ Every day is a new opportunity!';
+      case 'sad':
+        return '💙 It\'s okay to feel this way. Tomorrow will be better!';
+      case 'angry':
+        return '🔥 Take a deep breath. You\'ve got this!';
+      default:
+        return '💪 You\'re doing great!';
+    }
+  }
+
+  Color _getMoodBackgroundColor(String moodType) {
+    switch (moodType) {
+      case 'happy':
+        return const Color(0xFFE3F2FD); // Soft light blue
+      case 'neutral':
+        return const Color(0xFFF3E5F5); // Soft light purple
+      case 'sad':
+        return const Color(0xFFFCE4EC); // Soft light pink
+      case 'angry':
+        return const Color(0xFFFFF8E1); // Soft light yellow/cream
+      default:
+        return const Color(0xFFF0F0F0); // Light gray
+    }
+  }
+
+  void _showMotivationalMessage(String moodType) {
+    final message = _getMotivationalMessage(moodType);
+    
+    // Show the message at center of screen
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            decoration: BoxDecoration(
+              color: _getMoodBackgroundColor(moodType),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Text(
+              message,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+                decoration: TextDecoration.none,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      },
+    );
+    
+    // Auto-dismiss after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
+    });
   }
 
   void _checkForCompletion(double progress) {
+    final dateKey = '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+    
     if (progress == 1.0 && _lastProgress < 1.0) {
-      _confettiController.play();
-      Vibration.hasVibrator().then((hasVibrator) {
-        if (hasVibrator ?? false) {
-          Vibration.vibrate(duration: 300);
-        }
-      });
-      setState(() {
-        _showCompletionMessage = true;
-      });
-      Future.delayed(const Duration(seconds: 3), () {
-        if (mounted) setState(() => _showCompletionMessage = false);
-      });
+      // Check if confetti has already been shown for this date
+      final confettiAlreadyShown = _confettiShownDates.contains(dateKey);
+      
+      if (!confettiAlreadyShown) {
+        // This is the first time completing all tasks for this date
+        _confettiController.play();
+        Vibration.hasVibrator().then((hasVibrator) {
+          if (hasVibrator ?? false) {
+            Vibration.vibrate(duration: 300);
+          }
+        });
+        setState(() {
+          _showCompletionMessage = true;
+        });
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) setState(() => _showCompletionMessage = false);
+        });
+        
+        // Mark confetti as shown for this date
+        _confettiShownDates.add(dateKey);
+        _saveConfettiFlags();
+      }
+      
+      // Save the completion timestamp
+      _completionTimestamps[dateKey] = DateTime.now();
+      _saveCompletionTimestamps();
     } else if (progress < 1.0 && _lastProgress == 1.0) {
       setState(() {
         _showCompletionMessage = false;
       });
+      
+      // Remove completion timestamp if tasks are uncompleted
+      _completionTimestamps.remove(dateKey);
+      _saveCompletionTimestamps();
     }
     _lastProgress = progress;
   }
@@ -434,21 +661,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                     onDateSelected: (date) {
                                       setState(() {
                                         _selectedDate = date;
-                                        // Set time range based on selected date
-                                        final today = DateTime.now();
-                                        final isToday = date.year == today.year && 
-                                                       date.month == today.month && 
-                                                       date.day == today.day;
-                                        if (isToday) {
-                                          _selectedTimeRange = 'today';
+                                        // Preserve current view if already on weekly quest or mood tracker
+                                        if (_selectedTimeRange == 'weekly') {
+                                          // Stay in weekly quest view, just update the focused day
+                                          _focusedDay = date;
+                                          // Set the selected date as expanded
+                                          _expandedDate = date;
+                                        } else if (_selectedTimeRange == 'dashboard') {
+                                          // Stay in mood tracker view, just update the selected date
+                                          _selectedDate = date;
+                                          _focusedDay = date;
                                         } else {
-                                          _selectedTimeRange = 'custom';
+                                          // Set time range based on selected date for other views
+                                          final today = DateTime.now();
+                                          final isToday = date.year == today.year && 
+                                                         date.month == today.month && 
+                                                         date.day == today.day;
+                                          if (isToday) {
+                                            _selectedTimeRange = 'today';
+                                          } else {
+                                            _selectedTimeRange = 'custom';
+                                          }
                                         }
                                       });
                                     },
                                     onPageChanged: (date) {
                                       setState(() {
                                         _selectedDate = date;
+                                        _focusedDay = date; // Update focused day to sync with calendar navigation
                                       });
                                     },
                                   ),
@@ -517,7 +757,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 10),
                       MoodRow(
-                        selectedMood: _moodsByDate[DateFormat('yyyy-MM-dd').format(_selectedDate)],
+                        selectedMood: _getSelectedMoodType(),
                         onMoodSelected: (mood) => _onMoodSelected(0, mood),
                       ),
                       const SizedBox(height: 10),
@@ -537,11 +777,41 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Container(
                                     margin: const EdgeInsets.only(bottom: 8),
                                     child: Center(
-                                      child: _buildCompactTimeRangeSelector(themeProvider),
+                                      child: Column(
+                                        children: [
+                                          _buildCompactTimeRangeSelector(themeProvider),
+
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   // Type Filter Tabs removed
-                      _buildPlannerItemsForDate(_selectedDate, themeProvider),
+                                  
+                                  // Show Important Only Toggle
+                                  if (_selectedTimeRange != 'dashboard' && _selectedTimeRange != 'mood')
+                                    _buildImportantFilterToggle(themeProvider),
+                                  
+                                  _selectedTimeRange == 'dashboard' 
+                                    ? DashboardView(
+                                        items: _plannerItems,
+                                        selectedDate: _selectedDate,
+                                        moodData: _convertMoodDataForDashboard(),
+                                        onDateChanged: (date) {
+                                          setState(() {
+                                            _selectedDate = date;
+                                            _focusedDay = date;
+                                          });
+                                        },
+                                        onMonthChanged: (date) {
+                                          // This callback is triggered when mood calendar month changes
+                                          // We don't need to do anything here as the mood calendar
+                                          // already updates the main date via onDateChanged
+                                        },
+                                        onMoodSelected: (date, moodType) {
+                                          _onMoodSelected(0, moodType, date);
+                                        },
+                                      )
+                                    : _buildPlannerItemsForDate(_selectedDate, themeProvider),
                               ],
                               ),
                             ),
@@ -631,7 +901,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 height: 40,
                 child: Image.asset(
-                  'assets/images/daily_quest_logo.png',
+                  _getLogoForTheme(themeProvider),
                   fit: BoxFit.contain,
                 ),
               ),
@@ -738,6 +1008,12 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
     
+    // Filter by important if toggle is enabled
+    if (_showImportantOnly) {
+      final filteredItems = items.where((item) => item.isImportant).toList();
+      return filteredItems;
+    }
+    
     return items;
   }
 
@@ -830,6 +1106,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onSave: (updated) => Navigator.of(context).pop(updated),
           initialDate: targetItem.date,
           initialItem: targetItem,
+          existingItems: _plannerItems, // Pass existing items for duplicate validation
         ),
       ),
       barrierDismissible: true,
@@ -966,117 +1243,31 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildWeeklyView(DateTime baseDate, ThemeProvider themeProvider) {
-    final startOfWeek = _getStartOfWeek(_focusedDay);
-    final endOfWeek = _getEndOfWeek(_focusedDay);
-    
-    // Get items for the week
-    final weekItems = <PlannerItem>[];
-    DateTime currentDate = startOfWeek;
-    while (currentDate.isBefore(endOfWeek.add(const Duration(days: 1)))) {
-                  final dayItems = _getItemsForDate(currentDate);
-      weekItems.addAll(dayItems);
-      currentDate = currentDate.add(const Duration(days: 1));
-    }
-    
-    // Calculate week statistics
-    final totalItems = weekItems.length;
-    final completedItems = weekItems.where((item) => item.done).length;
-    final progress = totalItems > 0 ? completedItems / totalItems : 0.0;
-    
-    return Column(
-        children: [
-        // Week navigation header
-        _buildWeekNavigation(_focusedDay, themeProvider),
-          const SizedBox(height: 16),
-
-        // Cute sticker-style weekly grid
-          Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-              // Row 1: Monday, Tuesday, Wednesday
-                Row(
-                  children: [
-                  _buildDaySticker('Monday', startOfWeek.add(const Duration(days: 0)), themeProvider, const Color(0xFFE8EAF6)), // Lavender
-                  const SizedBox(width: 12),
-                  _buildDaySticker('Tuesday', startOfWeek.add(const Duration(days: 1)), themeProvider, const Color(0xFFFFF3E0)), // Peach
-                  const SizedBox(width: 12),
-                  _buildDaySticker('Wednesday', startOfWeek.add(const Duration(days: 2)), themeProvider, const Color(0xFFE8EAF6)), // Lavender
-                ],
-              ),
-              const SizedBox(height: 12),
-              
-              // Row 2: Thursday, Friday, Saturday
-              Row(
-                                children: [
-                  _buildDaySticker('Thursday', startOfWeek.add(const Duration(days: 3)), themeProvider, const Color(0xFFFFF3E0)), // Peach
-                  const SizedBox(width: 12),
-                  _buildDaySticker('Friday', startOfWeek.add(const Duration(days: 4)), themeProvider, const Color(0xFFFFE0B2)), // Soft Orange
-                  const SizedBox(width: 12),
-                  _buildDaySticker('Saturday', startOfWeek.add(const Duration(days: 5)), themeProvider, const Color(0xFFFFF3E0)), // Peach
-                ],
-              ),
-              const SizedBox(height: 12),
-              
-              // Row 3: Sunday, NOTE
-              Row(
-                    children: [
-                  Expanded(
-                    child: _buildDaySticker('Sunday', startOfWeek.add(const Duration(days: 6)), themeProvider, const Color(0xFFFFE0B2)), // Soft Orange
-                  ),
-                  const SizedBox(width: 12),
-                      Expanded(
-                    flex: 2, // Make Note box twice as wide as weekday boxes
-                    child: _buildNoteSticker(themeProvider),
-                  ),
-                ],
-                ),
-              ],
-            ),
-          ),
-          
-        const SizedBox(height: 16),
-        
-        // Week summary (kept as is)
-          Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: themeProvider.cardColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: themeProvider.shadowColor.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Week Summary',
-                  style: TextStyle(
-                    color: themeProvider.textColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    _buildSummaryCard('Total', totalItems.toString(), themeProvider.shade400, themeProvider),
-                    const SizedBox(width: 12),
-                    _buildSummaryCard('Completed', completedItems.toString(), themeProvider.successColor, themeProvider),
-                    const SizedBox(width: 12),
-                    _buildSummaryCard('Pending', '${(progress * 100).toInt()}%', themeProvider.warningColor, themeProvider),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+    return WeeklyView(
+      selectedDate: _focusedDay,
+      allItems: _plannerItems,
+      themeProvider: themeProvider,
+      onDaySelected: (date) {
+        setState(() {
+          _selectedDate = date;
+          _focusedDay = date;
+        });
+      },
+      onAddTask: (selectedDate) {
+        _showContextAwareAddForm(selectedDate: selectedDate);
+      },
+      onWeekChanged: (date) {
+        setState(() {
+          _selectedDate = date;
+          _focusedDay = date;
+        });
+      },
+      onToggleTask: (item) => _toggleWeeklyItem(item, themeProvider),
+      onDeleteTask: (item) => _handleDeleteItem(item),
+      onEditTask: (item) => _handleEditItem(item),
+      onToggleImportantTask: (item) => _toggleImportantStatus(item),
+      showImportantOnly: _showImportantOnly,
+      expandedDate: _expandedDate,
     );
   }
 
@@ -1124,7 +1315,9 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: themeProvider.shadowColor.withOpacity(0.1),
+                color: themeProvider.themeMode == ThemeMode.dark 
+                    ? Colors.white.withOpacity(0.1)  // Light shadow for dark mode
+                    : Colors.black.withOpacity(0.12), // Dark shadow for light mode
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -1135,20 +1328,51 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 'Month Summary',
-                style: TextStyle(
+                style: GoogleFonts.dancingScript(
                   color: themeProvider.textColor,
                   fontWeight: FontWeight.bold,
-                  fontSize: 18,
+                  fontSize: 20,
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 3,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.8,
                 children: [
-                  _buildSummaryCard('Total', totalItems.toString(), themeProvider.shade400, themeProvider),
-                  const SizedBox(width: 12),
-                  _buildSummaryCard('Completed', completedItems.toString(), themeProvider.successColor, themeProvider),
-                  const SizedBox(width: 12),
-                  _buildSummaryCard('Pending', pendingItems.toString(), themeProvider.warningColor, themeProvider),
+                  DonutChart(
+                    total: totalItems,
+                    completed: completedItems,
+                    pending: pendingItems,
+                    label: 'Total',
+                    size: 60,
+                    completedColor: themeProvider.shade400.withOpacity(0.8),
+                    pendingColor: themeProvider.shade400.withOpacity(0.8),
+                    totalColor: themeProvider.shade400.withOpacity(0.8),
+                  ),
+                  DonutChart(
+                    total: totalItems,
+                    completed: completedItems,
+                    pending: pendingItems,
+                    label: 'Completed',
+                    size: 60,
+                    completedColor: Colors.green.shade400.withOpacity(0.8),
+                    pendingColor: Colors.green.shade400.withOpacity(0.8),
+                    totalColor: Colors.green.shade400.withOpacity(0.8),
+                  ),
+                  DonutChart(
+                    total: totalItems,
+                    completed: completedItems,
+                    pending: pendingItems,
+                    label: 'Pending',
+                    size: 60,
+                    completedColor: Colors.orange.shade400.withOpacity(0.8),
+                    pendingColor: Colors.orange.shade400.withOpacity(0.8),
+                    totalColor: Colors.orange.shade400.withOpacity(0.8),
+                  ),
                 ],
               ),
             ],
@@ -1213,7 +1437,9 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: themeProvider.shadowColor.withOpacity(0.1),
+                color: themeProvider.themeMode == ThemeMode.dark 
+                    ? Colors.white.withOpacity(0.1)  // Light shadow for dark mode
+                    : Colors.black.withOpacity(0.12), // Dark shadow for light mode
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -1224,20 +1450,51 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 'Year Summary',
-                style: TextStyle(
+                style: GoogleFonts.dancingScript(
                   color: themeProvider.textColor,
                   fontWeight: FontWeight.bold,
-                  fontSize: 18,
+                  fontSize: 20,
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 3,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.8,
                 children: [
-                  _buildSummaryCard('Total', totalItems.toString(), themeProvider.shade400, themeProvider),
-                  const SizedBox(width: 12),
-                  _buildSummaryCard('Completed', completedItems.toString(), themeProvider.successColor, themeProvider),
-                  const SizedBox(width: 12),
-                  _buildSummaryCard('Pending', pendingItems.toString(), themeProvider.warningColor, themeProvider),
+                  DonutChart(
+                    total: totalItems,
+                    completed: completedItems,
+                    pending: pendingItems,
+                    label: 'Total',
+                    size: 60,
+                    completedColor: themeProvider.shade400.withOpacity(0.8),
+                    pendingColor: themeProvider.shade400.withOpacity(0.8),
+                    totalColor: themeProvider.shade400.withOpacity(0.8),
+                  ),
+                  DonutChart(
+                    total: totalItems,
+                    completed: completedItems,
+                    pending: pendingItems,
+                    label: 'Completed',
+                    size: 60,
+                    completedColor: Colors.green.shade400.withOpacity(0.8),
+                    pendingColor: Colors.green.shade400.withOpacity(0.8),
+                    totalColor: Colors.green.shade400.withOpacity(0.8),
+                  ),
+                  DonutChart(
+                    total: totalItems,
+                    completed: completedItems,
+                    pending: pendingItems,
+                    label: 'Pending',
+                    size: 60,
+                    completedColor: Colors.orange.shade400.withOpacity(0.8),
+                    pendingColor: Colors.orange.shade400.withOpacity(0.8),
+                    totalColor: Colors.orange.shade400.withOpacity(0.8),
+                  ),
                 ],
               ),
             ],
@@ -1379,7 +1636,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(
               yearText,
                 style: TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                   fontWeight: FontWeight.bold,
                 color: themeProvider.textColor,
               ),
@@ -1470,7 +1727,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(
               monthName,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
               color: themeProvider.textColor,
               ),
@@ -1570,7 +1827,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (dayOfMonth < 1 || dayOfMonth > daysInMonth) {
                 return Expanded(
                   child: Container(
-                    height: 60,
+                  height: 120,
                     margin: const EdgeInsets.all(1),
                     decoration: BoxDecoration(
                       color: Colors.transparent,
@@ -1593,7 +1850,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     });
                   },
                   child: Container(
-                    height: 60,
+                    height: 120,
                     margin: const EdgeInsets.all(1),
                     decoration: BoxDecoration(
                       color: isToday ? themeProvider.shade400.withOpacity(0.1) : Colors.transparent,
@@ -1637,7 +1894,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildCalendarItemPreview(PlannerItem item, ThemeProvider themeProvider) {
     final typeColor = _getTypeColor(item.type, themeProvider);
-    final typeEmoji = _getTypeEmoji(item.type);
     
     return Container(
       margin: const EdgeInsets.only(bottom: 1),
@@ -1647,69 +1903,43 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(2),
         border: Border.all(color: typeColor.withOpacity(0.3), width: 0.5),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            typeEmoji,
-            style: TextStyle(fontSize: 7),
-          ),
-          const SizedBox(width: 1),
-          Expanded(
             child: Text(
               item.name.length > 6 ? '${item.name.substring(0, 6)}...' : item.name,
               style: TextStyle(
-                fontSize: 7,
+          fontSize: 10,
                 color: typeColor,
                 fontWeight: FontWeight.w500,
               ),
               overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
       ),
     );
   }
 
   Widget _buildCalendarItemsWithOverflow(List<PlannerItem> items, ThemeProvider themeProvider) {
     // Calculate available space for items (cell height - date number - padding)
-    // Cell height: 60px, date number: ~12px, padding: 4px, spacing: 1px
-    // Available space: ~43px for items
+    // Cell height: 120px, date number: ~12px, padding: 4px, spacing: 1px
+    // Available space: ~103px for items
     const double itemHeight = 8.0; // Height of each item preview
     const double itemSpacing = 1.0; // Spacing between items
     const double overflowIndicatorHeight = 8.0; // Height of "+n more" indicator
+    const double availableSpace = 103.0; // Available space for items
     
     // Calculate how many items can fit
-    int maxVisibleItems = 0;
-    double currentHeight = 0;
+    int maxVisibleItems = 4; // Show maximum 4 items to avoid overflow
+    int hiddenItemsCount = 0;
     
-    for (int i = 0; i < items.length; i++) {
-      double nextHeight = currentHeight + itemHeight + (i > 0 ? itemSpacing : 0);
-      
-      // If adding this item would exceed available space, stop
-      if (nextHeight > 43) {
-        break;
-      }
-      
-      // If this is the last item or adding one more would exceed space, check if we need overflow indicator
-      if (i == items.length - 1 || nextHeight + itemHeight + itemSpacing + overflowIndicatorHeight > 43) {
-        maxVisibleItems = i + 1;
-        break;
-      }
-      
-      currentHeight = nextHeight;
-      maxVisibleItems = i + 1;
+    if (items.length > maxVisibleItems) {
+      hiddenItemsCount = items.length - maxVisibleItems;
     }
     
     // Build the visible items
     final visibleItems = items.take(maxVisibleItems).toList();
-    final hiddenItems = items.skip(maxVisibleItems).toList();
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ...visibleItems.map((item) => _buildCalendarItemPreview(item, themeProvider)),
-        if (hiddenItems.isNotEmpty)
+        if (hiddenItemsCount > 0)
           Container(
             margin: const EdgeInsets.only(top: 1),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
@@ -1718,7 +1948,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
-              '+${hiddenItems.length} more',
+              '+$hiddenItemsCount more',
               style: TextStyle(
                 fontSize: 8,
                 color: themeProvider.textColorSecondary,
@@ -1764,6 +1994,11 @@ class _HomeScreenState extends State<HomeScreen> {
     // For custom date or today, show single day view
     
             List<PlannerItem> items = _getItemsForTimeRange(date);
+    
+    // Filter by important if toggle is enabled
+    if (_showImportantOnly) {
+      items = items.where((item) => item.isImportant).toList();
+    }
     
     // Separate into unchecked and checked
     final unchecked = <PlannerItem>[];
@@ -1907,6 +2142,41 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildImportantFilterToggle(ThemeProvider themeProvider) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _showImportantOnly = !_showImportantOnly;
+              });
+            },
+            child: Row(
+              children: [
+                Icon(
+                  _showImportantOnly ? Icons.star : Icons.star_border,
+                  size: 20,
+                  color: _showImportantOnly ? Colors.amber : themeProvider.textColorSecondary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Important Only',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _showImportantOnly ? Colors.amber : themeProvider.textColorSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCompactTimeRangeSelector(ThemeProvider themeProvider) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -1918,11 +2188,122 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildCompactTimeRangeTab('today', 'T', 'Today', themeProvider),
-          _buildCompactTimeRangeTab('weekly', 'W', 'Weekly', themeProvider),
-          _buildCompactTimeRangeTab('monthly', 'M', 'Monthly', themeProvider),
-          _buildCompactTimeRangeTab('yearly', 'Y', 'Yearly', themeProvider),
+          _buildCompactTimeRangeTab('today', 'T', 'Today\'s Quest', themeProvider),
+          _buildViewMenuTab(themeProvider),
+          _buildCompactTimeRangeTab('monthly', 'M', 'Monthly Quest', themeProvider),
+          _buildCompactTimeRangeTab('yearly', 'Y', 'Yearly Quest', themeProvider),
+          _buildCompactTimeRangeTab('dashboard', '😊', 'Mood Tracker', themeProvider),
         ],
+                          ),
+                        );
+                      }
+
+  Widget _buildViewMenuTab(ThemeProvider themeProvider) {
+    final bool selected = _selectedTimeRange == 'weekly';
+    final displayLabel = selected ? 'Weekly Quest' : 'W';
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          // Always stay in Weekly view when Weekly Quest button is clicked
+            _selectedTimeRange = 'weekly';
+          // Regenerate AnimatedList keys to reset lists and prevent RangeError
+          _incompleteListKey = GlobalKey<AnimatedListState>();
+          _completedListKey = GlobalKey<AnimatedListState>();
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: EdgeInsets.symmetric(
+          horizontal: selected ? 16 : 12,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: selected ? themeProvider.shade400.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: selected ? Border.all(
+            color: themeProvider.shade400.withOpacity(0.3),
+            width: 1,
+          ) : null,
+        ),
+        child: AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 200),
+          style: TextStyle(
+            fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+            color: selected ? themeProvider.textColor : themeProvider.textColorSecondary,
+            fontSize: selected ? 14 : 13,
+          ),
+          child: Text(
+            displayLabel,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildViewMenuOptions(ThemeProvider themeProvider) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.transparent, width: 0),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildViewOption('weekly', 'Weekly', themeProvider),
+          const SizedBox(width: 8),
+          _buildViewOption('monthly', 'Monthly', themeProvider),
+          const SizedBox(width: 8),
+          _buildViewOption('yearly', 'Yearly', themeProvider),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildViewOption(String value, String label, ThemeProvider themeProvider) {
+    final bool selected = _selectedTimeRange == value;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedTimeRange = value;
+          _showViewMenu = true; // Keep menu open when switching views
+          // Regenerate AnimatedList keys to reset lists and prevent RangeError
+          _incompleteListKey = GlobalKey<AnimatedListState>();
+          _completedListKey = GlobalKey<AnimatedListState>();
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: EdgeInsets.symmetric(
+          horizontal: selected ? 16 : 12,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: selected ? themeProvider.shade400.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: selected ? Border.all(
+            color: themeProvider.shade400.withOpacity(0.3),
+            width: 1,
+          ) : null,
+        ),
+        child: AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 200),
+          style: TextStyle(
+            fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+            color: selected ? themeProvider.textColor : themeProvider.textColorSecondary,
+            fontSize: selected ? 14 : 13,
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+          ),
+        ),
                           ),
                         );
                       }
@@ -1935,9 +2316,22 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () {
         setState(() {
           if (value == 'today') {
-            // Reset to today when "T" is tapped
+            // Reset to today when "T" is tapped and close view menu
             _selectedDate = DateTime.now();
             _selectedTimeRange = 'today';
+            _showViewMenu = false; // Close view menu when switching to Today's Quest
+          } else if (value == 'dashboard') {
+            // Switch to mood tracker and close view menu
+            _selectedTimeRange = 'dashboard';
+            _showViewMenu = false; // Close view menu when switching to Mood Tracker
+          } else if (value == 'monthly') {
+            // Switch to monthly view and close view menu
+            _selectedTimeRange = 'monthly';
+            _showViewMenu = false; // Close view menu when switching to Monthly View
+          } else if (value == 'yearly') {
+            // Switch to yearly view and close view menu
+            _selectedTimeRange = 'yearly';
+            _showViewMenu = false; // Close view menu when switching to Yearly View
           } else {
             _selectedTimeRange = value;
           }
@@ -1955,7 +2349,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         decoration: BoxDecoration(
           color: selected ? themeProvider.shade400.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(8),
           border: selected ? Border.all(
             color: themeProvider.shade400.withOpacity(0.3),
             width: 1,
@@ -2025,7 +2419,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'task':
         return themeProvider.shade400;
       case 'routine':
-        return Colors.blue;
+        return themeProvider.themeMode == ThemeMode.dark ? Colors.white : Colors.black;
       case 'event':
         return Colors.green;
       case 'shopping':
@@ -2036,124 +2430,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPlannerItemRow(PlannerItem item, VoidCallback onToggle, ThemeProvider themeProvider, {bool flash = false}) {
-    final start = item.startTime;
-    final duration = item.duration ?? 0;
-    final end = start == null ? null : TimeOfDay(
-      hour: (start.hour + ((start.minute + duration) ~/ 60)) % 24,
-      minute: (start.minute + duration) % 60,
-    );
-    final typeColor = _getTypeColor(item.type, themeProvider);
-    String durationLabel = '';
-    if (duration > 0) {
-      if (duration % 60 == 0) {
-        durationLabel = '${duration ~/ 60}h';
-      } else if (duration > 60) {
-        durationLabel = '${duration ~/ 60}h${duration % 60}m';
-      } else {
-        durationLabel = '${duration}m';
-      }
-    }
-          return _AnimatedFlashRow(
+    return TaskRowWidget(
+      item: item,
+      themeProvider: themeProvider,
+      onToggle: onToggle,
         flash: flash,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: themeProvider.dividerColor.withOpacity(0.05),
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: themeProvider.dividerColor.withOpacity(0.05), // Made very light transparent gray
-                borderRadius: BorderRadius.circular(8), // Changed from circle to rounded rectangle
-              ),
-              child: Center(
-                child: item.type == 'shopping'
-                    ? Icon(Icons.shopping_cart_outlined, color: typeColor, size: 20)
-                    : Text(item.emoji, style: const TextStyle(fontSize: 20)),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _capitalizeWords(item.name),
-                          style: GoogleFonts.dancingScript(
-                            textStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              decoration: item.done ? TextDecoration.lineThrough : null,
-                              color: item.done ? themeProvider.textColorSecondary : themeProvider.textColor,
-                              ),
-                            ),
-                          ),
-                      ),
-                      if (durationLabel.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Text(durationLabel, style: TextStyle(fontSize: 12, color: themeProvider.shade400, fontWeight: FontWeight.w600)),
-                        ),
-                      // Show recurrence indicator
-                      if (item.recurrence != null && 
-                          (item.recurrence!.patterns.isNotEmpty || 
-                           (item.recurrence!.customRules != null && item.recurrence!.customRules!.isNotEmpty)))
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Icon(Icons.repeat, size: 16, color: themeProvider.infoColor),
-                          ),
-                        ],
-                      ),
-                  if (start != null)
-                    Row(
-                      children: [
-                        Text(
-                          start.format(context),
-                          style: TextStyle(fontSize: 12, color: themeProvider.textColorSecondary),
-                        ),
-                        if (end != null) ...[
-                          const SizedBox(width: 6),
-                          Text('-', style: TextStyle(fontSize: 12, color: themeProvider.textColorSecondary)),
-                          const SizedBox(width: 2),
-                          Text(
-                            end.format(context),
-                            style: TextStyle(fontSize: 12, color: themeProvider.textColorSecondary),
-                          ),
-                        ],
-                      ],
-                    ),
-                  if (item.type == 'routine' && item.steps != null && item.steps! > 0)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        '${item.stepsDone ?? 0} of ${item.steps} steps',
-                        style: TextStyle(fontSize: 12, color: themeProvider.infoColor, fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: item.done
-                  ? SunCheckbox(size: 22)
-                  : Icon(Icons.radio_button_unchecked, color: themeProvider.textColorSecondary, size: 22),
-              onPressed: onToggle,
-            ),
-          ],
-        ),
-      ),
+      onDelete: () => _handleDeleteItem(item),
+      onEdit: () => _handleEditItem(item),
+      onToggleImportant: () => _toggleImportantStatus(item),
     );
+  }
+
+  // Toggle important status for a task
+  void _toggleImportantStatus(PlannerItem item) {
+    setState(() {
+      item.isImportant = !item.isImportant;
+      PlannerStorage.save(_plannerItems);
+    });
   }
 
   // Helper method to capitalize first letter of each word
@@ -2168,7 +2461,56 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Simple toggle for weekly view items
   void _toggleWeeklyItem(PlannerItem item, ThemeProvider themeProvider) async {
+    // Check if this is a virtual instance of a recurring task
+    bool isVirtualInstance = item.id.contains('_virtual_');
+    
+    if (isVirtualInstance) {
+      // For virtual instances, we need to track completion per date
+      // Extract the original item ID and target date from the virtual instance ID
+      final parts = item.id.split('_virtual_');
+      if (parts.length == 2) {
+        final originalId = parts[0];
+        final targetDateMillis = int.tryParse(parts[1]);
+        
+        if (targetDateMillis != null) {
+          // Find the original recurring task
+          final originalItem = _plannerItems.firstWhere(
+            (original) => original.id == originalId,
+            orElse: () => item,
+          );
+          
+          if (originalItem != item) {
+            // Initialize completion tracking if not exists
+            if (originalItem.completionDates == null) {
+              originalItem.completionDates = <String>{};
+            }
+            
+            final dateKey = '${item.date.year}-${item.date.month.toString().padLeft(2, '0')}-${item.date.day.toString().padLeft(2, '0')}';
+            
+            setState(() {
+              if (item.done) {
+                // Mark as incomplete
+                originalItem.completionDates!.remove(dateKey);
+                item.done = false;
+                
+                // Reset confetti flag for this date since a plan was unmarked
+                _confettiShownDates.remove(dateKey);
+                _saveConfettiFlags();
+              } else {
+                // Mark as complete
+                originalItem.completionDates!.add(dateKey);
+                item.done = true;
+              }
+              
+              PlannerStorage.save(_plannerItems);
+            });
+          }
+        }
+      }
+    } else {
+      // For non-virtual instances, use the original logic
     setState(() {
+      final wasCompleted = item.done;
       item.done = !item.done;
       
       // If marking as completed and it's a routine with steps, mark all steps as completed
@@ -2176,9 +2518,22 @@ class _HomeScreenState extends State<HomeScreen> {
         item.stepChecked = List.filled(item.stepChecked!.length, true);
         item.stepsDone = item.stepChecked!.length;
       }
+      // If marking as incomplete and it's a routine with steps, reset all steps to unchecked
+      else if (!item.done && item.type == 'routine' && item.stepChecked != null && item.stepChecked!.isNotEmpty) {
+        item.stepChecked = List.filled(item.stepChecked!.length, false);
+        item.stepsDone = 0;
+      }
+      
+      // Reset confetti flag if unmarking from completed to pending
+      if (wasCompleted && !item.done) {
+        final dateKey = '${item.date.year}-${item.date.month.toString().padLeft(2, '0')}-${item.date.day.toString().padLeft(2, '0')}';
+        _confettiShownDates.remove(dateKey);
+        _saveConfettiFlags();
+      }
       
       PlannerStorage.save(_plannerItems);
     });
+    }
     
     // Update the home widget
     await WidgetService.updateWidget(_plannerItems);
@@ -2204,22 +2559,31 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onToggleItem(PlannerItem item, bool toCompleted, int index, bool fromCompleted, ThemeProvider themeProvider) async {
     final itemKey = item.hashCode.toString() + item.name;
     
-    // Handle recurring tasks
-    PlannerItem? originalItem;
-    if (item.recurrence != null && 
-        (item.recurrence!.patterns.isNotEmpty || 
-         (item.recurrence!.customRules != null && item.recurrence!.customRules!.isNotEmpty))) {
+    // Check if this is a virtual instance of a recurring task
+    bool isVirtualInstance = item.id.contains('_virtual_');
+    
+    if (isVirtualInstance) {
+      // For virtual instances, we need to track completion per date
+      // Extract the original item ID and target date from the virtual instance ID
+      final parts = item.id.split('_virtual_');
+      if (parts.length == 2) {
+        final originalId = parts[0];
+        final targetDateMillis = int.tryParse(parts[1]);
+        
+        if (targetDateMillis != null) {
       // Find the original recurring task
-      originalItem = _plannerItems.firstWhere(
-        (original) => original.recurrence != null && 
-                     (original.recurrence!.patterns.isNotEmpty || 
-                      (original.recurrence!.customRules != null && original.recurrence!.customRules!.isNotEmpty)) &&
-                     original.name == item.name &&
-                     original.type == item.type &&
-                     original.date.isBefore(item.date),
+          final originalItem = _plannerItems.firstWhere(
+            (original) => original.id == originalId,
         orElse: () => item,
       );
+          
+          if (originalItem != item) {
+            // Initialize completion tracking if not exists
+            if (originalItem.completionDates == null) {
+              originalItem.completionDates = <String>{};
     }
+            
+            final dateKey = '${item.date.year}-${item.date.month.toString().padLeft(2, '0')}-${item.date.day.toString().padLeft(2, '0')}';
     
     setState(() {
       _flashKey = itemKey;
@@ -2233,6 +2597,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           duration: const Duration(milliseconds: 350),
         );
+                
+                // Mark as complete for this specific date
+                originalItem.completionDates!.add(dateKey);
         item.done = true;
         
         // If marking as completed and it's a routine with steps, mark all steps as completed
@@ -2241,15 +2608,6 @@ class _HomeScreenState extends State<HomeScreen> {
           item.stepsDone = item.stepChecked!.length;
         }
         
-        // Update original item if this is a recurring task
-        if (originalItem != null && originalItem != item) {
-          originalItem.done = true;
-          // Also update steps for the original item if it's a routine
-          if (originalItem.type == 'routine' && originalItem.stepChecked != null && originalItem.stepChecked!.isNotEmpty) {
-            originalItem.stepChecked = List.filled(originalItem.stepChecked!.length, true);
-            originalItem.stepsDone = originalItem.stepChecked!.length;
-          }
-        }
         // Insert into completed after a short delay
         Future.delayed(const Duration(milliseconds: 200), () {
           setState(() {
@@ -2266,15 +2624,85 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           duration: const Duration(milliseconds: 350),
         );
+                
+                // Mark as incomplete for this specific date
+                originalItem.completionDates!.remove(dateKey);
         item.done = false;
         
-        // When unmarking as completed, we don't automatically uncheck steps
-        // The user can manually manage individual step completion
-        
-        // Update original item if this is a recurring task
-        if (originalItem != null && originalItem != item) {
-          originalItem.done = false;
+        // If marking as incomplete and it's a routine with steps, reset all steps to unchecked
+        if (item.type == 'routine' && item.stepChecked != null && item.stepChecked!.isNotEmpty) {
+          item.stepChecked = List.filled(item.stepChecked!.length, false);
+          item.stepsDone = 0;
         }
+        
+        // Reset confetti flag for this date since a plan was unmarked
+        _confettiShownDates.remove(dateKey);
+        _saveConfettiFlags();
+        
+                // Insert into incomplete after a short delay
+                Future.delayed(const Duration(milliseconds: 200), () {
+                  setState(() {
+                    _incompleteListKey.currentState?.insertItem(0, duration: const Duration(milliseconds: 350));
+                  });
+                });
+              }
+              
+              PlannerStorage.save(_plannerItems);
+            });
+          }
+        }
+      }
+    } else {
+      // For non-virtual instances, use the original logic
+      setState(() {
+        _flashKey = itemKey;
+        if (toCompleted) {
+          // Remove from incomplete
+          _incompleteListKey.currentState?.removeItem(
+            index,
+            (context, animation) => SizeTransition(
+              sizeFactor: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+              child: _buildPlannerItemRow(item, () {}, themeProvider, flash: true),
+            ),
+            duration: const Duration(milliseconds: 350),
+          );
+          item.done = true;
+          
+          // If marking as completed and it's a routine with steps, mark all steps as completed
+          if (item.type == 'routine' && item.stepChecked != null && item.stepChecked!.isNotEmpty) {
+            item.stepChecked = List.filled(item.stepChecked!.length, true);
+            item.stepsDone = item.stepChecked!.length;
+          }
+          
+          // Insert into completed after a short delay
+          Future.delayed(const Duration(milliseconds: 200), () {
+            setState(() {
+              _completedListKey.currentState?.insertItem(0, duration: const Duration(milliseconds: 350));
+            });
+          });
+        } else {
+          // Remove from completed
+          _completedListKey.currentState?.removeItem(
+            index,
+            (context, animation) => SizeTransition(
+              sizeFactor: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+              child: _buildPlannerItemRow(item, () {}, themeProvider, flash: true),
+            ),
+            duration: const Duration(milliseconds: 350),
+          );
+          item.done = false;
+          
+          // If marking as incomplete and it's a routine with steps, reset all steps to unchecked
+          if (item.type == 'routine' && item.stepChecked != null && item.stepChecked!.isNotEmpty) {
+            item.stepChecked = List.filled(item.stepChecked!.length, false);
+            item.stepsDone = 0;
+          }
+          
+          // Reset confetti flag for this date since a plan was unmarked
+          final dateKey = '${item.date.year}-${item.date.month.toString().padLeft(2, '0')}-${item.date.day.toString().padLeft(2, '0')}';
+          _confettiShownDates.remove(dateKey);
+          _saveConfettiFlags();
+          
         // Insert into incomplete after a short delay
         Future.delayed(const Duration(milliseconds: 200), () {
           setState(() {
@@ -2284,6 +2712,8 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       PlannerStorage.save(_plannerItems);
     });
+    }
+    
     // Reset flash after animation
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted && _flashKey == itemKey) {
@@ -2351,7 +2781,9 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: themeProvider.shadowColor.withOpacity(0.1),
+            color: themeProvider.themeMode == ThemeMode.dark 
+                ? Colors.white.withOpacity(0.1)  // Light shadow for dark mode
+                : Colors.black.withOpacity(0.12), // Dark shadow for light mode
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -2906,12 +3338,14 @@ class AddPlannerItemForm extends StatefulWidget {
   final DateTime initialDate;
   final PlannerItem? initialItem; // Add support for editing existing items
   final int? initialType; // Add support for setting initial type
+  final List<PlannerItem>? existingItems; // Add support for duplicate validation
   const AddPlannerItemForm({
     Key? key, 
     required this.onSave, 
     required this.initialDate, 
     this.initialItem,
     this.initialType,
+    this.existingItems,
   }) : super(key: key);
   @override
   State<AddPlannerItemForm> createState() => _AddPlannerItemFormState();
@@ -2928,9 +3362,9 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
   bool _hasTime = false;
   DateTime _date = DateTime.now();
   TimeOfDay _startTime = TimeOfDay.now();
-  TimeOfDay _endTime = TimeOfDay.now().replacing(minute: (TimeOfDay.now().minute + 30) % 60);
+  TimeOfDay _endTime = TimeOfDay.now();
   int _duration = 0;
-  final List<int> _durations = [0, 1, 15, 30, 45, 60, 90];
+  final List<int> _durations = [1, 15, 30, 45, 60, 90];
   late final ScrollController _durationScrollController;
   String? _nameError;
   Recurrence? _recurrence;
@@ -2941,12 +3375,66 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
 
   // Flag to determine if we're editing an existing item
   late bool _isEditing;
+  
+  // Selected emoji for user customization
+  String? _selectedEmoji;
+  // Track if emoji suggestions should be shown when emoji is clicked
+  bool _showEmojiSuggestions = false;
+  
+  // Focus management for emoji suggestions
+  late FocusNode _nameFocusNode;
+  
+  // Important task flag
+  bool _isImportant = false;
+
+  // Helper method to calculate end time correctly
+  TimeOfDay _calculateEndTime(TimeOfDay startTime, int durationMinutes) {
+    final startMinutes = startTime.hour * 60 + startTime.minute;
+    final endMinutes = startMinutes + durationMinutes;
+    final endHour = (endMinutes ~/ 60) % 24;
+    final endMinute = endMinutes % 60;
+    return TimeOfDay(hour: endHour, minute: endMinute);
+  }
+
+  // Helper method to update duration based on start and end times
+  void _updateDurationFromTimes() {
+    final startMinutes = _startTime.hour * 60 + _startTime.minute;
+    final endMinutes = _endTime.hour * 60 + _endTime.minute;
+    
+    int duration;
+    if (endMinutes >= startMinutes) {
+      duration = endMinutes - startMinutes;
+    } else {
+      // Handle overnight duration (e.g., 23:00 to 01:00)
+      duration = (24 * 60 - startMinutes) + endMinutes;
+    }
+    
+    // Update duration if it's different
+    if (duration != _duration) {
+      setState(() {
+        _duration = duration;
+        // If this duration is not in the list, add it
+        if (!_durations.contains(duration)) {
+          _durations.add(duration);
+          _durations.sort();
+        }
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _date = widget.initialDate;
     _durationScrollController = ScrollController();
+    _nameFocusNode = FocusNode();
+    _nameFocusNode.addListener(() {
+      if (!_nameFocusNode.hasFocus) {
+        setState(() {
+          _showEmojiSuggestions = false;
+        });
+      }
+    });
     
     // Set the editing flag based on whether we have an initial item
     _isEditing = widget.initialItem != null;
@@ -2955,7 +3443,9 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
     if (widget.initialItem != null) {
       final item = widget.initialItem!;
       _nameController.text = item.name;
+      _selectedEmoji = item.emoji; // Restore the selected emoji when editing
       _date = item.date;
+      _isImportant = item.isImportant;
       
       // Set reminder for routine
           _reminderRoutine = item.reminder ?? false;
@@ -3017,7 +3507,8 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
       // For new items, set current time and calculate end time
       final now = TimeOfDay.now();
       _startTime = now;
-      _endTime = now.replacing(minute: (now.minute + 30) % 60);
+      _endTime = _calculateEndTime(now, 30);
+      _duration = 30; // Set default duration for new items
     }
   }
 
@@ -3026,6 +3517,7 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
     _nameController.dispose();
     _locationController.dispose();
     _durationScrollController.dispose();
+    _nameFocusNode.dispose();
     for (final c in _stepControllers) {
       c.dispose();
     }
@@ -3052,31 +3544,7 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
     });
   }
 
-  // Helper to update duration based on start and end times
-  void _updateDurationFromTimes() {
-    if (_hasTime) {
-      final startMinutes = _startTime.hour * 60 + _startTime.minute;
-      final endMinutes = _endTime.hour * 60 + _endTime.minute;
-      int duration;
-      
-      if (endMinutes >= startMinutes) {
-        duration = endMinutes - startMinutes;
-      } else {
-        // Handle overnight duration (e.g., 23:00 to 01:00)
-        duration = (24 * 60 - startMinutes) + endMinutes;
-      }
-      
-      // Update duration if it's different
-      if (duration != _duration) {
-        _duration = duration;
-        // If this duration is not in the list, add it
-        if (!_durations.contains(duration)) {
-          _durations.add(duration);
-          _durations.sort();
-        }
-      }
-    }
-  }
+
 
   void _addStep() {
     setState(() {
@@ -3128,9 +3596,10 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildNameField(themeColor, 'Plan Name'),
+        _buildImportantField(themeColor),
         _buildDateTimeFields(themeColor),
-        _buildReminderField(themeColor),
         _buildDurationField(themeColor),
+        _buildReminderField(themeColor),
         RecurrenceSection(
           initialValue: _recurrence,
           onChanged: (r) => setState(() => _recurrence = r),
@@ -3186,15 +3655,81 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
     );
   }
 
+  Widget _buildImportantField(Color themeColor) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _isImportant = !_isImportant;
+              });
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Icon(
+                  _isImportant ? Icons.star : Icons.star_border,
+                  size: 20,
+                  color: _isImportant ? Colors.amber : themeProvider.textColorSecondary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Mark as Important',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _isImportant ? Colors.amber : themeProvider.textColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildNameField(Color themeColor, String label) {
-    return Row(
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(getEmojiForName(_nameController.text), style: const TextStyle(fontSize: 24)),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _showEmojiSuggestions = !_showEmojiSuggestions;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: _showEmojiSuggestions 
+                          ? themeProvider.shade400.withOpacity(0.1)
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: _showEmojiSuggestions 
+                            ? themeProvider.shade400.withOpacity(0.3)
+                            : Colors.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      _selectedEmoji ?? EmojiService.getEmojiForName(_nameController.text), 
+                      style: const TextStyle(fontSize: 24)
+                    ),
+                  ),
+                ),
         const SizedBox(width: 8),
         Expanded(
           child: TextField(
             controller: _nameController,
-            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: Provider.of<ThemeProvider>(context, listen: false).textColor),
+                    focusNode: _nameFocusNode,
+                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: themeProvider.textColor),
             decoration: InputDecoration(
               labelText: label,
               labelStyle: TextStyle(color: themeColor, fontSize: 13, fontWeight: FontWeight.w400),
@@ -3205,11 +3740,28 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
             ),
             onChanged: (_) => setState(() {
               _nameError = null;
-              // This will trigger a rebuild and update the emoji
+                      // Reset selected emoji when text changes
+                      _selectedEmoji = null;
+                      _showEmojiSuggestions = false; // Hide emoji suggestions when text changes
             }),
           ),
-        ),
-      ],
+                ),
+              ],
+            ),
+            EmojiSuggestions(
+              text: _nameController.text,
+              onEmojiSelected: (emoji) {
+                setState(() {
+                  _selectedEmoji = emoji;
+                  _showEmojiSuggestions = false; // Hide suggestions after selection
+                });
+              },
+              themeProvider: themeProvider,
+              isFocused: _nameFocusNode.hasFocus || _showEmojiSuggestions,
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -3280,18 +3832,18 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                     onChanged: (v) {
                       setState(() {
                         _hasTime = v;
-                        // When time is enabled, automatically calculate duration from start/end times
                         if (v) {
-                          // If duration is currently 0 (None), set a default 30-minute duration
+                          // When time is enabled, set default 30-minute duration
                           if (_duration == 0) {
                             _duration = 30;
-                            _endTime = TimeOfDay(
-                              hour: _startTime.hour,
-                              minute: (_startTime.minute + 30) % 60,
-                            );
+                            _endTime = _calculateEndTime(_startTime, 30);
                           } else {
                             _updateDurationFromTimes();
                           }
+                        } else {
+                          // When time is disabled, clear duration completely
+                          _duration = 0;
+                          _endTime = _startTime;
                         }
                       });
                     },
@@ -3353,15 +3905,14 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                         if (picked != null) {
                           setState(() {
                             _startTime = picked;
-                            // Ensure end time is after start time
-                            if (_endTime.hour * 60 + _endTime.minute <= _startTime.hour * 60 + _startTime.minute) {
-                              _endTime = TimeOfDay(
-                                hour: _startTime.hour,
-                                minute: (_startTime.minute + 30) % 60,
-                              );
+                            // Update end time based on current duration
+                            if (_duration > 0) {
+                              _endTime = _calculateEndTime(picked, _duration);
+                            } else {
+                              // If no duration set, default to 30 minutes
+                              _endTime = _calculateEndTime(picked, 30);
+                              _duration = 30;
                             }
-                            // Update duration based on start and end times
-                            _updateDurationFromTimes();
                           });
                         }
                       },
@@ -3484,7 +4035,9 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
   Widget _buildDurationField(Color themeColor) {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
-    return Column(
+    return Opacity(
+      opacity: _hasTime ? 1.0 : 0.5,
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
             const SizedBox(height: 2),
@@ -3493,13 +4046,17 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                 Text('Duration', style: TextStyle(fontWeight: FontWeight.w400, fontSize: 13, color: themeProvider.textColor)),
             const Spacer(),
             TextButton(
-              onPressed: () async {
+              onPressed: _hasTime ? () async {
                     final custom = await showCustomDurationDialog(context, themeColor: themeProvider.shade400);
                 if (custom != null && !_durations.contains(custom)) {
                   setState(() {
                     _durations.add(custom);
                     _durations.sort();
                     _duration = custom;
+                    // Update end time based on new duration
+                    if (_hasTime && custom > 0) {
+                      _endTime = _calculateEndTime(_startTime, custom);
+                    }
                   });
                   // Scroll to the custom duration
                   final idx = _durations.indexOf(custom);
@@ -3512,6 +4069,10 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                 } else if (custom != null) {
                   setState(() {
                     _duration = custom;
+                    // Update end time based on new duration
+                    if (_hasTime && custom > 0) {
+                      _endTime = _calculateEndTime(_startTime, custom);
+                    }
                   });
                   final idx = _durations.indexOf(custom);
                   await Future.delayed(const Duration(milliseconds: 50));
@@ -3521,12 +4082,12 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                     curve: Curves.easeInOut,
                   );
                 }
-              },
+              } : null,
               style: TextButton.styleFrom(
-                foregroundColor: themeProvider.shade400,
+                foregroundColor: _hasTime ? themeProvider.shade400 : themeProvider.textColorSecondary,
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               ),
-              child: Text('More', style: TextStyle(fontSize: 12, color: themeProvider.shade400)),
+              child: Text('More', style: TextStyle(fontSize: 12, color: _hasTime ? themeProvider.shade400 : themeProvider.textColorSecondary)),
             ),
           ],
         ),
@@ -3540,7 +4101,7 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
             separatorBuilder: (_, __) => const SizedBox(width: 6),
             itemBuilder: (context, i) {
               final d = _durations[i];
-              final selected = _duration == d;
+              final selected = _hasTime && _duration == d;
               return ChoiceChip(
                 label: Text(
                   d == 0 ? 'None' : d < 60 ? '${d}m' : d % 60 == 0 ? '${d ~/ 60}h' : '${d ~/ 60}h${d % 60}m',
@@ -3548,23 +4109,22 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                 ),
                 selected: selected,
                 selectedColor: themeColor,
-                onSelected: (_) {
+                onSelected: _hasTime ? (_) {
                   setState(() {
                     _duration = d;
                     // Update end time based on new duration
                     if (_hasTime && d > 0) {
-                      final startMinutes = _startTime.hour * 60 + _startTime.minute;
-                      final endMinutes = startMinutes + d;
-                      _endTime = TimeOfDay(hour: (endMinutes ~/ 60) % 24, minute: endMinutes % 60);
+                      _endTime = _calculateEndTime(_startTime, d);
                     }
                   });
-                },
+                } : null,
                 showCheckmark: false,
               );
             },
           ),
         ),
       ],
+    ),
     );
       },
     );
@@ -3575,7 +4135,9 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
     
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
-        return Column(
+        return Opacity(
+          opacity: _hasTime ? 1.0 : 0.5,
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 2),
@@ -3588,12 +4150,12 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                   child: Switch(
       value: _reminder,
                     activeColor: themeProvider.shade400,
-                    onChanged: (val) => _setReminder(val),
+                      onChanged: _hasTime ? (val) => _setReminder(val) : null,
                   ),
                 ),
               ],
             ),
-        if (_reminder) ...[
+              if (_reminder && _hasTime) ...[
           const SizedBox(height: 2),
           Container(
             height: 28,
@@ -3632,6 +4194,7 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
             ),
         ],
       ],
+          ),
     );
       },
     );
@@ -3665,11 +4228,229 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
     );
   }
 
+  // Check for time overlap with existing plans
+  List<PlannerItem> _checkTimeOverlap() {
+    if (!_hasTime || widget.existingItems == null) return [];
+    
+    final targetDate = DateTime(_date.year, _date.month, _date.day);
+    final newStartMinutes = _startTime.hour * 60 + _startTime.minute;
+    final newEndMinutes = newStartMinutes + _duration;
+    
+    return widget.existingItems!.where((item) {
+      // Check if item is on the same date
+      final itemDate = DateTime(item.date.year, item.date.month, item.date.day);
+      if (!itemDate.isAtSameMomentAs(targetDate)) return false;
+      
+      // Skip completed plans - they don't cause conflicts
+      if (item.done) return false;
+      
+      // Check if item has time set
+      if (item.startTime == null || item.duration == null) return false;
+      
+      // Calculate item's time range
+      final itemStartMinutes = item.startTime!.hour * 60 + item.startTime!.minute;
+      final itemEndMinutes = itemStartMinutes + item.duration!;
+      
+      // Check for overlap (new plan overlaps with existing plan)
+      return (newStartMinutes < itemEndMinutes && newEndMinutes > itemStartMinutes);
+    }).toList();
+  }
+
+  // Show time conflict dialog
+  void _showTimeConflictDialog(List<PlannerItem> overlappingItems) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: themeProvider.cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning, color: Colors.orange),
+            const SizedBox(width: 8),
+            Text(
+              'Time Conflict',
+              style: TextStyle(
+                color: themeProvider.textColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '⚠️ Time conflict: Another plan exists during this time range.',
+              style: TextStyle(
+                color: themeProvider.textColor,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (overlappingItems.isNotEmpty) ...[
+              Text(
+                'Overlapping plans:',
+                style: TextStyle(
+                  color: themeProvider.textColorSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...overlappingItems.map((item) => Container(
+                margin: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: themeProvider.shade400.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: themeProvider.shade400.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(item.emoji, style: const TextStyle(fontSize: 16)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.name,
+                            style: TextStyle(
+                              color: themeProvider.textColor,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                            ),
+                          ),
+                          if (item.startTime != null && item.duration != null)
+                            Text(
+                              '${item.startTime!.format(context)} - ${_calculateEndTime(item.startTime!, item.duration!).format(context)}',
+                              style: TextStyle(
+                                color: themeProvider.textColorSecondary,
+                                fontSize: 11,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )).toList(),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: themeProvider.textColorSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // TODO: Implement view overlapping plan functionality
+              // This would typically navigate to the plan or highlight it
+            },
+            child: Text(
+              'View overlapping plan',
+              style: TextStyle(color: themeProvider.shade400),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeProvider.shade400,
+              foregroundColor: themeProvider.cardColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Continue with saving despite overlap
+              _saveWithOverlap();
+            },
+            child: const Text('Continue anyway'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Save the plan even with time overlap
+  void _saveWithOverlap() {
+    _steps = _stepControllers.map((c) => c.text).toList();
+    final allStepsCompleted = _stepChecked.isNotEmpty && _stepChecked.every((checked) => checked);
+    final finalDoneStatus = allStepsCompleted; // Plan completion is always derived from step completion
+    
+    final item = PlannerItem(
+      id: widget.initialItem?.id,
+      name: _nameController.text.trim(),
+              emoji: _selectedEmoji ?? EmojiService.getEmojiForName(_nameController.text.trim()),
+      date: _date,
+      startTime: _hasTime ? _startTime : null,
+      duration: _hasTime && _duration > 0 ? _duration : null,
+      done: finalDoneStatus,
+      type: 'routine',
+      steps: _steps.length,
+      stepsDone: _stepChecked.where((c) => c).length,
+      reminder: _reminderRoutine,
+      reminderOffset: _reminderRoutine ? _reminderOffsetRoutine : null,
+      stepNames: List<String>.from(_steps),
+      stepChecked: List<bool>.from(_stepChecked),
+      recurrence: _recurrence,
+      location: _locationController.text.trim().isNotEmpty ? _locationController.text.trim() : null,
+    );
+    
+    widget.onSave(item);
+    Navigator.of(context).pop();
+  }
+
   void _onSave() {
     if (_nameController.text.trim().isEmpty) {
       setState(() => _nameError = 'Enter a name');
       return;
     }
+
+    // Check for duplicate plan names on the same date
+    if (widget.existingItems != null && !_isEditing) {
+      final planName = _nameController.text.trim();
+      final targetDate = DateTime(_date.year, _date.month, _date.day);
+      
+      final duplicateExists = widget.existingItems!.any((item) {
+        final itemDate = DateTime(item.date.year, item.date.month, item.date.day);
+        return item.name.toLowerCase() == planName.toLowerCase() && 
+               itemDate.isAtSameMomentAs(targetDate) &&
+               item.id != widget.initialItem?.id; // Exclude current item when editing
+      });
+      
+      if (duplicateExists) {
+        final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('A plan already exists for this date. Please rename it.'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: themeProvider.errorColor,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        return;
+      }
+    }
+
+    // Check for time overlap if time is set
+    if (_hasTime && widget.existingItems != null && !_isEditing) {
+      final overlappingItems = _checkTimeOverlap();
+      if (overlappingItems.isNotEmpty) {
+        _showTimeConflictDialog(overlappingItems);
+        return;
+      }
+    }
+
     // Only allow routine creation
     final type = 'routine';
     PlannerItem item;
@@ -3681,15 +4462,15 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
       _steps = _stepControllers.map((c) => c.text).toList();
       // Check if all steps are completed to automatically mark the plan as done
       final allStepsCompleted = _stepChecked.isNotEmpty && _stepChecked.every((checked) => checked);
-      final finalDoneStatus = allStepsCompleted ? true : originalDone;
+      final finalDoneStatus = allStepsCompleted; // Plan completion is always derived from step completion
       
       item = PlannerItem(
         id: originalId, // Preserve original ID when editing
         name: _nameController.text.trim(),
-        emoji: getEmojiForName(_nameController.text.trim()),
+        emoji: _selectedEmoji ?? EmojiService.getEmojiForName(_nameController.text.trim()),
         date: _date,
         startTime: _hasTime ? _startTime : null,
-        duration: _duration == 0 ? null : _duration,
+        duration: _hasTime && _duration > 0 ? _duration : null,
         done: finalDoneStatus,
         type: 'routine',
         steps: _steps.length,
@@ -3700,6 +4481,7 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
         stepChecked: List<bool>.from(_stepChecked),
         recurrence: _recurrence,
         location: _locationController.text.trim().isNotEmpty ? _locationController.text.trim() : null,
+        isImportant: _isImportant,
     );
     widget.onSave(item);
     Navigator.of(context).pop();
@@ -3795,7 +4577,7 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                             
                             // Check if all steps are completed to automatically mark the plan as done
                             final allStepsCompleted = _stepChecked.isNotEmpty && _stepChecked.every((checked) => checked);
-                            final finalDoneStatus = allStepsCompleted ? true : widget.initialItem!.done;
+                            final finalDoneStatus = allStepsCompleted; // Plan completion is always derived from step completion
                             
                             print('UP button: Form data gathered - Name: $newName, Date: $newDate, HasTime: $newHasTime, Steps: ${newSteps.length}');
                             
@@ -3803,10 +4585,10 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                             final updatedItem = PlannerItem(
                               id: widget.initialItem!.id,
                               name: newName,
-                              emoji: getEmojiForName(newName), // Regenerate emoji based on new name
+                              emoji: _selectedEmoji ?? EmojiService.getEmojiForName(newName), // Use selected emoji or regenerate based on new name
                               date: newDate,
                               startTime: newStartTime,
-                              duration: newDuration,
+                              duration: _hasTime && (newDuration ?? 0) > 0 ? newDuration : null,
                               done: finalDoneStatus, // Auto-complete if all steps are done
                               type: widget.initialItem!.type,
                               steps: newSteps.length,
@@ -3817,6 +4599,7 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                               stepChecked: List<bool>.from(_stepChecked),
                               recurrence: newRecurrence,
                               location: newLocation,
+                              isImportant: _isImportant,
                             );
                             
                             print('UP button: Created comprehensive updated item: ${updatedItem.name}');
@@ -3890,6 +4673,10 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
       },
     );
   }
+
+
+
+
 }
 
 class _AnimatedFlashRow extends StatefulWidget {
@@ -4005,4 +4792,24 @@ class _WavePainter extends CustomPainter {
     return oldDelegate.waveHeight != waveHeight;
   }
 } 
+
+  String _getLogoForTheme(ThemeProvider themeProvider) {
+    // Get the current theme color and mode to map it to the appropriate logo
+    final currentColor = themeProvider.selectedThemeColor;
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final modeSuffix = isDarkMode ? 'dark' : 'light';
+    
+    if (currentColor == Colors.teal) {
+      return 'assets/images/daily quest planner_teal_${modeSuffix}logo.png';
+    } else if (currentColor == Colors.pink) {
+      return 'assets/images/daily quest planner_pink_${modeSuffix}logo.png';
+    } else if (currentColor == CustomMaterialColor.burgundy) {
+      return 'assets/images/daily quest planner_burgundy_${modeSuffix}logo.png';
+    } else if (currentColor == CustomMaterialColor.slate) {
+      return 'assets/images/daily quest planner_slate_${modeSuffix}logo.png';
+    } else {
+      // Default fallback
+      return 'assets/images/daily quest planner_teal_${modeSuffix}logo.png';
+    }
+  } 
 

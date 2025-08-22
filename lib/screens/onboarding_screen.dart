@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -23,13 +24,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
     OnboardingPage(
       title: 'Smart Planning',
-      description: 'Create recurring tasks, set reminders, and track your progress with beautiful visualizations.',
+      description: 'Create recurring tasks, set reminders, and track your progress and mood with beautiful visualizations.',
       icon: Icons.insights,
     ),
     OnboardingPage(
-      title: 'Voice Commands',
-      description: 'Add tasks quickly using voice commands - just tap and speak!',
-      icon: Icons.mic,
+      title: 'Choose Your Style',
+      description: 'Switch between 4 beautiful color themes to match your vibe!',
+      icon: Icons.palette,
     ),
     OnboardingPage(
       title: 'Ready to Start?',
@@ -75,6 +76,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           body: SafeArea(
             child: Column(
               children: [
+                // Skip button
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TextButton(
+                      onPressed: _completeOnboarding,
+                      child: Text(
+                        'Skip',
+                        style: TextStyle(
+                          color: themeProvider.textColorSecondary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
@@ -99,6 +118,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildPage(OnboardingPage page, ThemeProvider themeProvider) {
+    final isLastPage = _pages.indexOf(page) == _pages.length - 1;
+    
     return Padding(
       padding: const EdgeInsets.all(32.0),
       child: Column(
@@ -130,7 +151,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           // Title
           Text(
             page.title,
-            style: TextStyle(
+            style: GoogleFonts.dancingScript(
               fontSize: 28,
               fontWeight: FontWeight.bold,
               color: themeProvider.shade700,
@@ -149,10 +170,42 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             textAlign: TextAlign.center,
           ),
+          
+          // Visual highlight section for the last page
+          if (isLastPage) ...[
+            const SizedBox(height: 40),
+            _buildFeatureHighlights(themeProvider),
+          ],
         ],
       ),
     );
   }
+
+  Widget _buildFeatureHighlights(ThemeProvider themeProvider) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.security,
+          size: 20,
+          color: themeProvider.shade400,
+        ),
+        const SizedBox(width: 12),
+        Text(
+          'Your data is always safe, even offline',
+          style: TextStyle(
+            fontSize: 14,
+            color: themeProvider.textColor,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+
 
   Widget _buildBottomSection(ThemeProvider themeProvider) {
     return Padding(

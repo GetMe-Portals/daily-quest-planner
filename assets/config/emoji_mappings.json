@@ -1,0 +1,2233 @@
+{
+  "categories": {
+    "meeting_events": {
+      "emoji": "📅",
+      "keywords": ["meeting", "appointment", "conference"]
+    },
+    "birthday_party": {
+      "emoji": "🎂",
+      "keywords": ["birthday", "party", "celebration"]
+    },
+    "wedding_anniversary": {
+      "emoji": "💒",
+      "keywords": ["wedding", "anniversary"]
+    },
+    "food_dining": {
+      "emoji": "🍽️",
+      "keywords": ["dinner", "lunch", "breakfast"]
+    },
+    "health_fitness": {
+      "emoji": "💪",
+      "keywords": ["workout", "gym", "exercise", "fitness"]
+    },
+    "running": {
+      "emoji": "🏃",
+      "keywords": ["run", "jog", "marathon"]
+    },
+    "walking": {
+      "emoji": "🚶",
+      "keywords": ["walk", "hike"]
+    },
+    "yoga_meditation": {
+      "emoji": "🧘",
+      "keywords": ["yoga", "meditate", "meditation"]
+    },
+    "medical": {
+      "emoji": "🩺",
+      "keywords": ["doctor", "medical", "appointment"]
+    },
+    "dental": {
+      "emoji": "🦷",
+      "keywords": ["dentist", "dental"]
+    },
+    "pharmacy": {
+      "emoji": "💊",
+      "keywords": ["pharmacy", "medicine"]
+    },
+    "shopping": {
+      "emoji": "🛒",
+      "keywords": ["shop", "buy", "purchase"]
+    },
+    "grocery": {
+      "emoji": "🛒",
+      "keywords": ["grocery", "food", "market"]
+    },
+    "clothing": {
+      "emoji": "👕",
+      "keywords": ["clothes", "fashion", "outfit"]
+    },
+    "travel": {
+      "emoji": "✈️",
+      "keywords": ["flight", "travel", "trip", "vacation"]
+    },
+    "car": {
+      "emoji": "🚗",
+      "keywords": ["car", "drive", "road"]
+    },
+    "train": {
+      "emoji": "🚆",
+      "keywords": ["train", "subway", "metro"]
+    },
+    "bus": {
+      "emoji": "🚌",
+      "keywords": ["bus", "transport"]
+    },
+    "work_business": {
+      "emoji": "💼",
+      "keywords": ["work", "office", "job"]
+    },
+    "email": {
+      "emoji": "✉️",
+      "keywords": ["email", "mail"]
+    },
+    "phone_call": {
+      "emoji": "📞",
+      "keywords": ["call", "phone", "dial"]
+    },
+    "presentation": {
+      "emoji": "📊",
+      "keywords": ["presentation", "pitch", "demo"]
+    },
+    "interview": {
+      "emoji": "📋",
+      "keywords": ["interview", "resume", "cv"]
+    },
+    "study_learning": {
+      "emoji": "📖",
+      "keywords": ["study", "learn", "course"]
+    },
+    "reading": {
+      "emoji": "📚",
+      "keywords": ["read", "book", "library"]
+    },
+    "writing": {
+      "emoji": "✍️",
+      "keywords": ["write", "blog", "article"]
+    },
+    "homework": {
+      "emoji": "📝",
+      "keywords": ["homework", "assignment", "project"]
+    },
+    "exam_test": {
+      "emoji": "📝",
+      "keywords": ["exam", "test", "quiz"]
+    },
+    "cleaning": {
+      "emoji": "🧹",
+      "keywords": ["clean", "laundry", "wash"]
+    },
+    "cooking": {
+      "emoji": "🍳",
+      "keywords": ["cook", "bake", "kitchen"]
+    },
+    "gardening": {
+      "emoji": "💧",
+      "keywords": ["water", "plant", "garden"]
+    },
+    "pets": {
+      "emoji": "🐕",
+      "keywords": ["pet", "dog", "cat"]
+    },
+    "baby_child": {
+      "emoji": "👶",
+      "keywords": ["baby", "child", "kid"]
+    },
+    "movies": {
+      "emoji": "🎬",
+      "keywords": ["movie", "film", "cinema"]
+    },
+    "music": {
+      "emoji": "🎵",
+      "keywords": ["music", "concert", "gig"]
+    },
+    "gaming": {
+      "emoji": "🎮",
+      "keywords": ["game", "play", "gaming"]
+    },
+    "sports": {
+      "emoji": "⚽",
+      "keywords": ["sport", "football", "basketball"]
+    },
+    "swimming": {
+      "emoji": "🏊",
+      "keywords": ["swim", "pool"]
+    },
+    "banking": {
+      "emoji": "💰",
+      "keywords": ["bank", "money", "finance"]
+    },
+    "payments": {
+      "emoji": "💳",
+      "keywords": ["pay", "bill", "rent"]
+    },
+    "computer_tech": {
+      "emoji": "💻",
+      "keywords": ["computer", "laptop", "tech"]
+    },
+    "mobile_phone": {
+      "emoji": "📱",
+      "keywords": ["phone", "mobile", "app"]
+    },
+    "internet": {
+      "emoji": "🌐",
+      "keywords": ["internet", "wifi", "online"]
+    },
+    "task_default": {
+      "emoji": "📝",
+      "keywords": ["task", "todo"]
+    },
+    "routine": {
+      "emoji": "🔁",
+      "keywords": ["routine", "habit"]
+    },
+    "event": {
+      "emoji": "📆",
+      "keywords": ["event", "activity"]
+    },
+
+
+    "sweat_droplets": {
+      "emoji": "💦",
+      "keywords": ["sweat", "droplets", "water", "moisture", "hydration", "steam", "leak", "perspiration"]
+    },
+    "zzz": {
+      "emoji": "💤",
+      "keywords": ["sleep", "snore", "tired", "nap", "rest", "bedtime", "doze", "slumber", "exhausted"]
+    },
+    "palms_together": {
+      "emoji": "🤲",
+      "keywords": ["begging", "offering", "cupped hands", "give", "receive", "charity", "open hands", "supplication"]
+    },
+    "handshake": {
+      "emoji": "🤝",
+      "keywords": ["agreement", "deal", "partnership", "greeting", "collaboration", "unity", "cooperation", "contract"]
+    },
+    "praying_hands": {
+      "emoji": "🙏",
+      "keywords": ["prayer", "thanks", "respect", "gratitude", "blessing", "hope", "worship", "namaste", "faith"]
+    },
+    "writing_hand": {
+      "emoji": "✍",
+      "keywords": ["writing", "notes", "journal", "sign", "autograph", "scribble", "signature", "compose"]
+    },
+    "nail_polish": {
+      "emoji": "💅",
+      "keywords": ["manicure", "nail care", "beauty", "fashion", "grooming", "self-care", "style", "nail salon"]
+    },
+    "selfie_hand": {
+      "emoji": "🤳",
+      "keywords": ["selfie", "camera", "phone photo", "self-portrait", "social media", "snap", "pose", "mirror pic"]
+    },
+    "flexed_biceps": {
+      "emoji": "💪",
+      "keywords": ["strength", "muscle", "workout", "gym", "fitness", "power", "training", "flex", "bodybuilding"]
+    },
+    "mechanical_arm": {
+      "emoji": "🦾",
+      "keywords": ["robotic arm", "prosthetic", "cyborg", "bionics", "mechanical limb", "technology", "augmented"]
+    },
+    "leg": {
+      "emoji": "🦵",
+      "keywords": ["leg", "walk", "kick", "run", "stride", "limb", "movement", "lower body"]
+    },
+    "mechanical_leg": {
+      "emoji": "🦿",
+      "keywords": ["prosthetic leg", "robotic leg", "cybernetic", "bionic", "mechanical limb", "mobility aid"]
+    },
+    "foot": {
+      "emoji": "🦶",
+      "keywords": ["foot", "step", "walk", "barefoot", "pedicure", "stand", "balance", "sole"]
+    },
+    "ear": {
+      "emoji": "👂",
+      "keywords": ["ear", "listen", "hearing", "audio", "sound", "earring", "auditory"]
+    },
+    "ear_with_hearing_aid": {
+      "emoji": "🦻",
+      "keywords": ["hearing aid", "disability", "assistive device", "ear", "sound", "deaf", "accessibility"]
+    },
+    "nose": {
+      "emoji": "👃",
+      "keywords": ["nose", "smell", "scent", "sniff", "breath", "nasal", "inhale"]
+    },
+    "brain": {
+      "emoji": "🧠",
+      "keywords": ["brain", "mind", "thinking", "intelligence", "mental", "neuroscience", "thought", "cognitive"]
+    },
+    "footprints": {
+      "emoji": "👣",
+      "keywords": ["footprints", "track", "path", "walk", "steps", "trail", "trace", "movement"]
+    },
+    "anatomical_heart": {
+      "emoji": "🫀",
+      "keywords": ["heart", "organ", "anatomy", "cardiology", "blood", "pulse", "heartbeat", "body"]
+    },
+    "lungs": {
+      "emoji": "🫁",
+      "keywords": ["lungs", "breathing", "respiration", "oxygen", "air", "health", "chest", "respiratory system"]
+    },
+    "tooth": {
+      "emoji": "🦷",
+      "keywords": ["tooth", "dentist", "dental", "bite", "chew", "oral", "cavity", "molar"]
+    },
+    "bone": {
+      "emoji": "🦴",
+      "keywords": ["bone", "skeleton", "fracture", "anatomy", "x-ray", "joint", "osteology", "structure"]
+    },
+    "eyes": {
+      "emoji": "👀",
+      "keywords": ["eyes", "look", "see", "watch", "vision", "stare", "observe", "gaze"]
+    },
+    "eye": {
+      "emoji": "👁",
+      "keywords": ["eye", "sight", "vision", "observe", "focus", "retina", "iris", "look"]
+    },
+    "tongue": {
+      "emoji": "👅",
+      "keywords": ["tongue", "taste", "lick", "flavor", "mouth", "food", "sense", "oral"]
+    },
+    "mouth": {
+      "emoji": "👄",
+      "keywords": ["mouth", "speak", "kiss", "talk", "lips", "oral", "bite", "expression"]
+    },
+
+
+    "student": {
+      "emoji": "🧑‍🎓",
+      "keywords": ["student", "education", "learning", "graduate", "study", "school", "university", "academy"]
+    },
+    "man_student": {
+      "emoji": "👨‍🎓",
+      "keywords": ["male student", "studying", "college", "schoolboy", "education", "graduate", "learner"]
+    },
+    "woman_student": {
+      "emoji": "👩‍🎓",
+      "keywords": ["female student", "study", "schoolgirl", "graduate", "university", "education", "learning"]
+    },
+    "teacher": {
+      "emoji": "🧑‍🏫",
+      "keywords": ["teacher", "educator", "class", "lecture", "instructor", "professor", "mentor", "blackboard"]
+    },
+    "man_teacher": {
+      "emoji": "👨‍🏫",
+      "keywords": ["male teacher", "education", "school", "lecturer", "professor", "teaching", "instructor"]
+    },
+    "woman_teacher": {
+      "emoji": "👩‍🏫",
+      "keywords": ["female teacher", "educator", "mentor", "school", "lecture", "instruct", "professor"]
+    },
+    "cook": {
+      "emoji": "🧑‍🍳",
+      "keywords": ["cook", "chef", "kitchen", "cooking", "culinary", "meal prep", "restaurant", "baking"]
+    },
+    "man_police": {
+      "emoji": "👮‍♂️",
+      "keywords": ["policeman", "officer", "law", "security", "cop", "authority", "enforcement", "patrol"]
+    },
+    "man_walking": {
+      "emoji": "🚶‍♂️",
+      "keywords": ["walking", "exercise", "commute", "travel", "leisure walk", "steps", "movement", "foot"]
+    },
+    "woman_walking": {
+      "emoji": "🚶‍♀️",
+      "keywords": ["female walking", "stroll", "walk", "movement", "exercise", "fitness", "foot travel"]
+    },
+    "man_running": {
+      "emoji": "🏃‍♂️",
+      "keywords": ["running", "jogging", "sprint", "fitness", "race", "training", "male runner"]
+    },
+    "woman_running": {
+      "emoji": "🏃‍♀️",
+      "keywords": ["female running", "jog", "track", "runner", "race", "fitness", "training"]
+    },
+    "horse_racing": {
+      "emoji": "🏇",
+      "keywords": ["horse racing", "jockey", "race", "equestrian", "competition", "track", "speed"]
+    },
+    "skier": {
+      "emoji": "⛷",
+      "keywords": ["skiing", "snow", "winter sport", "mountain", "slopes", "alpine", "snow travel"]
+    },
+    "snowboarder": {
+      "emoji": "🏂",
+      "keywords": ["snowboarding", "winter sports", "mountain", "snow", "board", "extreme sports"]
+    },
+    "person_playing_golf": {
+      "emoji": "🏌",
+      "keywords": ["golf", "swing", "hole in one", "tee", "sports", "outdoor", "golf club"]
+    },
+    "man_playing_golf": {
+      "emoji": "🏌️‍♂️",
+      "keywords": ["male golfer", "golfing", "tee", "putting", "swing", "club", "game"]
+    },
+    "woman_playing_golf": {
+      "emoji": "🏌️‍♀️",
+      "keywords": ["female golfer", "sports", "golf", "swing", "club", "outdoor", "tee"]
+    },
+    "person_surfing": {
+      "emoji": "🏄",
+      "keywords": ["surfing", "waves", "beach", "ocean", "surfboard", "water sport"]
+    },
+    "man_surfing": {
+      "emoji": "🏄‍♂️",
+      "keywords": ["male surfer", "ocean sport", "wave riding", "beach", "surfing", "board"]
+    },
+    "woman_surfing": {
+      "emoji": "🏄‍♀️",
+      "keywords": ["female surfing", "wave", "beach", "surfboard", "ocean", "watersport"]
+    },
+    "person_rowing": {
+      "emoji": "🚣",
+      "keywords": ["rowing", "boat", "paddle", "water", "sport", "canoe", "kayak"]
+    },
+    "man_rowing": {
+      "emoji": "🚣‍♂️",
+      "keywords": ["male rowing", "water sport", "paddle", "boat", "canoeing", "exercise"]
+    },
+    "woman_rowing": {
+      "emoji": "🚣‍♀️",
+      "keywords": ["female rowing", "boat", "canoe", "paddle", "water", "training"]
+    },
+    "person_swimming": {
+      "emoji": "🏊",
+      "keywords": ["swimming", "pool", "water sport", "float", "laps", "swimmer"]
+    },
+    "man_swimming": {
+      "emoji": "🏊‍♂️",
+      "keywords": ["male swimmer", "pool", "swim", "exercise", "training", "aqua sport"]
+    },
+    "woman_swimming": {
+      "emoji": "🏊‍♀️",
+      "keywords": ["female swimming", "water", "swim", "pool", "training", "laps"]
+    },
+    "person_bouncing_ball": {
+      "emoji": "⛹",
+      "keywords": ["basketball", "bounce", "ball", "sports", "court", "dribble", "play"]
+    },
+    "man_bouncing_ball": {
+      "emoji": "⛹️‍♂️",
+      "keywords": ["male basketball", "dribbling", "sports", "court", "ball", "game"]
+    },
+    "woman_bouncing_ball": {
+      "emoji": "⛹️‍♀️",
+      "keywords": ["female basketball", "dribble", "court", "sports", "ball", "game"]
+    },
+    "person_lifting_weights": {
+      "emoji": "🏋",
+      "keywords": ["weightlifting", "gym", "fitness", "strength", "barbell", "workout"]
+    },
+    "man_lifting_weights": {
+      "emoji": "🏋️‍♂️",
+      "keywords": ["male lifting", "weights", "strength", "barbell", "gym", "training"]
+    },
+    "woman_lifting_weights": {
+      "emoji": "🏋️‍♀️",
+      "keywords": ["female lifting", "barbell", "fitness", "strength", "gym", "exercise"]
+    },
+    "person_cycling": {
+      "emoji": "🚴",
+      "keywords": ["cycling", "bike", "ride", "commute", "fitness", "road", "pedal"]
+    },
+    "man_cycling": {
+      "emoji": "🚴‍♂️",
+      "keywords": ["male cycling", "bike", "fitness", "pedal", "road", "training"]
+    },
+    "woman_cycling": {
+      "emoji": "🚴‍♀️",
+      "keywords": ["female cycling", "bike", "ride", "fitness", "road", "training"]
+    },
+    "person_mountain_biking": {
+      "emoji": "🚵",
+      "keywords": ["mountain biking", "trail", "bike", "off-road", "extreme", "cycling"]
+    },
+    "man_mountain_biking": {
+      "emoji": "🚵‍♂️",
+      "keywords": ["male mountain biking", "trail", "bike", "ride", "sport", "adventure"]
+    },
+    "woman_mountain_biking": {
+      "emoji": "🚵‍♀️",
+      "keywords": ["female mountain biking", "extreme", "bike", "mountain", "trail", "cycling"]
+    },
+    "person_cartwheeling": {
+      "emoji": "🤸",
+      "keywords": ["cartwheel", "gymnastics", "acrobat", "flip", "balance", "play"]
+    },
+    "man_cartwheeling": {
+      "emoji": "🤸‍♂️",
+      "keywords": ["male gymnastics", "cartwheel", "flip", "movement", "exercise", "acrobat"]
+    },
+    "woman_cartwheeling": {
+      "emoji": "🤸‍♀️",
+      "keywords": ["female gymnastics", "flip", "cartwheel", "balance", "sport", "fun"]
+    },
+    "people_wrestling": {
+      "emoji": "🤼",
+      "keywords": ["wrestling", "match", "fight", "grapple", "sports", "competition"]
+    },
+    "men_wrestling": {
+      "emoji": "🤼‍♂️",
+      "keywords": ["male wrestlers", "fight", "sports", "match", "grappling"]
+    },
+    "women_wrestling": {
+      "emoji": "🤼‍♀️",
+      "keywords": ["female wrestlers", "grapple", "fight", "competition", "wrestling"]
+    },
+    "person_water_polo": {
+      "emoji": "🤽",
+      "keywords": ["water polo", "sport", "swimming", "team sport", "ball", "pool"]
+    },
+    "man_water_polo": {
+      "emoji": "🤽‍♂️",
+      "keywords": ["male water polo", "ball", "sport", "pool", "competition"]
+    },
+    "woman_water_polo": {
+      "emoji": "🤽‍♀️",
+      "keywords": ["female water polo", "pool", "sport", "team", "water", "game"]
+    },
+    "person_handball": {
+      "emoji": "🤾",
+      "keywords": ["handball", "throw", "team sport", "game", "sports", "ball"]
+    },
+    "man_handball": {
+      "emoji": "🤾‍♂️",
+      "keywords": ["male handball", "sport", "team", "ball", "throw", "goal"]
+    },
+    "woman_handball": {
+      "emoji": "🤾‍♀️",
+      "keywords": ["female handball", "ball", "sport", "team", "throw", "goal"]
+    },
+    "person_juggling": {
+      "emoji": "🤹",
+      "keywords": ["juggling", "performance", "circus", "balance", "skill", "show"]
+    },
+    "man_juggling": {
+      "emoji": "🤹‍♂️",
+      "keywords": ["male juggler", "circus", "balls", "performance", "entertainment"]
+    },
+    "woman_juggling": {
+      "emoji": "🤹‍♀️",
+      "keywords": ["female juggler", "performance", "skill", "entertainment", "show"]
+    },
+    "person_meditating": {
+      "emoji": "🧘",
+      "keywords": ["meditation", "yoga", "peace", "mindfulness", "relax", "lotus pose"]
+    },
+    "man_meditating": {
+      "emoji": "🧘‍♂️",
+      "keywords": ["male yoga", "meditate", "relax", "mind", "balance", "lotus position"]
+    },
+    "woman_meditating": {
+      "emoji": "🧘‍♀️",
+      "keywords": ["female meditation", "yoga", "lotus", "balance", "relax", "peace"]
+    },
+    "person_bathing": {
+      "emoji": "🛀",
+      "keywords": ["bath", "relax", "self-care", "hygiene", "clean", "bathtub", "soak"]
+    },
+    "person_in_bed": {
+      "emoji": "🛌",
+      "keywords": ["sleep", "rest", "bedtime", "tired", "dream", "bed", "nap"]
+    },
+
+    "people_holding_hands": {
+      "emoji": "🧑‍🤝‍🧑",
+      "keywords": ["friendship", "connection", "together", "unity", "companionship", "support", "bond", "diversity"]
+    },
+    "women_holding_hands": {
+      "emoji": "👭",
+      "keywords": ["female friends", "solidarity", "togetherness", "companionship", "girlfriends", "sisterhood"]
+    },
+    "woman_and_man_holding_hands": {
+      "emoji": "👫",
+      "keywords": ["couple", "romance", "relationship", "bond", "love", "together", "dating", "partnership"]
+    },
+    "men_holding_hands": {
+      "emoji": "👬",
+      "keywords": ["male couple", "friendship", "solidarity", "relationship", "support", "love", "companionship"]
+    },
+    "kiss": {
+      "emoji": "💏",
+      "keywords": ["kiss", "love", "romance", "affection", "couple", "relationship", "intimacy"]
+    },
+    "woman_and_man_kissing": {
+      "emoji": "👩‍❤️‍💋‍👨",
+      "keywords": ["heterosexual kiss", "romance", "love", "intimate", "affection", "relationship", "date"]
+    },
+    "man_and_man_kissing": {
+      "emoji": "👨‍❤️‍💋‍👨",
+      "keywords": ["gay couple", "kiss", "affection", "intimacy", "LGBTQ", "love", "romance"]
+    },
+    "woman_and_woman_kissing": {
+      "emoji": "👩‍❤️‍💋‍👩",
+      "keywords": ["lesbian couple", "kiss", "intimacy", "LGBTQ", "love", "romance", "affection"]
+    },
+    "woman_and_man_couple": {
+      "emoji": "👩‍❤️‍👨",
+      "keywords": ["heterosexual couple", "love", "dating", "relationship", "romantic", "heart", "partner"]
+    },
+    "man_and_man_couple": {
+      "emoji": "👨‍❤️‍👨",
+      "keywords": ["gay couple", "romance", "LGBTQ", "relationship", "love", "partner", "bond"]
+    },
+    "woman_and_woman_couple": {
+      "emoji": "👩‍❤️‍👩",
+      "keywords": ["lesbian couple", "LGBTQ", "love", "relationship", "romance", "affection", "partner"]
+    },
+    "couple_with_heart": {
+      "emoji": "💑",
+      "keywords": ["relationship", "love", "couple", "romantic", "heart", "dating", "affection", "partner"]
+    },
+    "person_speaking": {
+      "emoji": "🗣",
+      "keywords": ["speech", "talking", "communication", "speaking", "voice", "presentation", "dialogue", "announcement"]
+    },
+    "dog": {
+      "emoji": "🐕",
+      "keywords": ["dog", "pet", "puppy", "canine", "walk", "bark"]
+    },
+    "cat": {
+      "emoji": "🐈",
+      "keywords": ["cat", "pet", "kitten", "meow", "feline", "scratch"]
+    },
+    "horse": {
+      "emoji": "🐎",
+      "keywords": ["horse", "ride", "gallop", "equestrian", "stable", "mane"]
+    },
+    "cow": {
+      "emoji": "🐄",
+      "keywords": ["cow", "milk", "dairy", "farm", "moo", "cattle"]
+    },
+    "ox": {
+      "emoji": "🐂",
+      "keywords": ["ox", "strength", "farm", "yoke", "bullock", "labor"]
+    },
+    "pig": {
+      "emoji": "🐖",
+      "keywords": ["pig", "farm", "pork", "snout", "mud", "oink"]
+    },
+    "ram": {
+      "emoji": "🐏",
+      "keywords": ["ram", "horns", "male sheep", "mountain", "graze"]
+    },
+    "ewe": {
+      "emoji": "🐑",
+      "keywords": ["ewe", "sheep", "wool", "graze", "pasture", "flock"]
+    },
+    "goat": {
+      "emoji": "🐐",
+      "keywords": ["goat", "mountain", "bleat", "horn", "farm", "herd"]
+    },
+    "camel": {
+      "emoji": "🐪",
+      "keywords": ["camel", "desert", "hump", "travel", "ride"]
+    },
+    "mouse": {
+      "emoji": "🐁",
+      "keywords": ["mouse", "rodent", "cheese", "tiny", "scurry"]
+    },
+    "rat": {
+      "emoji": "🐀",
+      "keywords": ["rat", "rodent", "pest", "urban", "cheese"]
+    },
+    "paw_prints": {
+      "emoji": "🐾",
+      "keywords": ["paw", "footprint", "pet", "animal", "tracks"]
+    },
+    "turkey": {
+      "emoji": "🦃",
+      "keywords": ["turkey", "thanksgiving", "bird", "feathers", "gobble"]
+    },
+    "bird": {
+      "emoji": "🐦",
+      "keywords": ["bird", "feathers", "fly", "tweet", "perch"]
+    },
+    "black_bird": {
+      "emoji": "🐦‍⬛",
+      "keywords": ["blackbird", "bird", "feathers", "mystery", "fly"]
+    },
+    "penguin": {
+      "emoji": "🐧",
+      "keywords": ["penguin", "cold", "antarctica", "bird", "waddle", "ice"]
+    },
+    "dove": {
+      "emoji": "🕊",
+      "keywords": ["dove", "peace", "wings", "fly", "white bird"]
+    },
+    "eagle": {
+      "emoji": "🦅",
+      "keywords": ["eagle", "hawk", "fly", "freedom", "prey", "wings"]
+    },
+    "duck": {
+      "emoji": "🦆",
+      "keywords": ["duck", "pond", "quack", "feathers", "swim"]
+    },
+    "swan": {
+      "emoji": "🦢",
+      "keywords": ["swan", "elegant", "lake", "white", "graceful"]
+    },
+    "owl": {
+      "emoji": "🦉",
+      "keywords": ["owl", "night", "wisdom", "hoot", "bird", "tree"]
+    },
+    "chicken": {
+      "emoji": "🐔",
+      "keywords": ["chicken", "cluck", "farm", "egg", "poultry"]
+    },
+    "rooster": {
+      "emoji": "🐓",
+      "keywords": ["rooster", "morning", "crow", "farm", "feathers"]
+    },
+    "flamingo": {
+      "emoji": "🦩",
+      "keywords": ["flamingo", "pink", "leg", "bird", "lake", "tropical"]
+    },
+    "peacock": {
+      "emoji": "🦜",
+      "keywords": ["peacock", "feathers", "colorful", "bird", "display"]
+    },
+    "whale": {
+      "emoji": "🐋",
+      "keywords": ["whale", "ocean", "big", "splash", "mammal", "swim"]
+    },
+    "dolphin": {
+      "emoji": "🐬",
+      "keywords": ["dolphin", "ocean", "smart", "swim", "jump", "play"]
+    },
+    "fish": {
+      "emoji": "🐟",
+      "keywords": ["fish", "swim", "water", "aquarium", "seafood"]
+    },
+    "frog": {
+      "emoji": "🐸",
+      "keywords": ["frog", "leap", "pond", "ribbit", "green"]
+    },
+    "crocodile": {
+      "emoji": "🐊",
+      "keywords": ["crocodile", "reptile", "swamp", "teeth", "snap"]
+    },
+    "turtle": {
+      "emoji": "🐢",
+      "keywords": ["turtle", "slow", "shell", "swim", "reptile"]
+    },
+    "lizard": {
+      "emoji": "🦎",
+      "keywords": ["lizard", "reptile", "crawl", "tail", "climb"]
+    },
+    "snake": {
+      "emoji": "🐍",
+      "keywords": ["snake", "reptile", "hiss", "slither", "venom"]
+    },
+    "snail": {
+      "emoji": "🐌",
+      "keywords": ["snail", "slow", "shell", "crawl", "trail"]
+    },
+    "butterfly": {
+      "emoji": "🦋",
+      "keywords": ["butterfly", "wings", "colorful", "fly", "garden"]
+    },
+    "bug": {
+      "emoji": "🐛",
+      "keywords": ["bug", "insect", "crawl", "green", "garden"]
+    },
+    "ant": {
+      "emoji": "🐜",
+      "keywords": ["ant", "insect", "colony", "tiny", "worker"]
+    },
+    "honeybee": {
+      "emoji": "🐝",
+      "keywords": ["bee", "honey", "buzz", "hive", "pollinate"]
+    },
+    "cockroach": {
+      "emoji": "🪳",
+      "keywords": ["cockroach", "insect", "pest", "dark", "scurry"]
+    },
+    "spider": {
+      "emoji": "🕷",
+      "keywords": ["spider", "web", "insect", "crawl", "creepy"]
+    },
+    "rose": {
+      "emoji": "🌹",
+      "keywords": ["rose", "flower", "love", "red", "romance"]
+    },
+    "wilted_flower": {
+      "emoji": "🥀",
+      "keywords": ["wilted", "dead", "flower", "sad", "dry"]
+    },
+    "hibiscus": {
+      "emoji": "🌺",
+      "keywords": ["hibiscus", "tropical", "flower", "pink", "blossom"]
+    },
+    "sunflower": {
+      "emoji": "🌻",
+      "keywords": ["sunflower", "yellow", "sun", "bright", "field"]
+    },
+    "blossom": {
+      "emoji": "🌼",
+      "keywords": ["blossom", "flower", "spring", "bloom", "garden"]
+    },
+    "tulip": {
+      "emoji": "🌷",
+      "keywords": ["tulip", "flower", "garden", "spring", "colorful"]
+    },
+
+  "grapes": {
+    "emoji": "🍇",
+    "keywords": ["fruit", "grape", "snack", "healthy", "purple"]
+  },
+  "watermelon": {
+    "emoji": "🍉",
+    "keywords": ["fruit", "melon", "refreshing", "summer", "juicy"]
+  },
+  "banana": {
+    "emoji": "🍌",
+    "keywords": ["fruit", "banana", "yellow", "snack", "peel"]
+  },
+  "pineapple": {
+    "emoji": "🍍",
+    "keywords": ["fruit", "tropical", "pineapple", "sweet", "juice"]
+  },
+  "mango": {
+    "emoji": "🥭",
+    "keywords": ["fruit", "mango", "tropical", "sweet", "yellow"]
+  },
+  "broccoli": {
+    "emoji": "🥦",
+    "keywords": ["vegetable", "broccoli", "green", "healthy", "fiber"]
+  },
+  "carrot": {
+    "emoji": "🥕",
+    "keywords": ["vegetable", "carrot", "orange", "healthy", "crunchy"]
+  },
+  "leafy_green": {
+    "emoji": "🥬",
+    "keywords": ["vegetable", "green", "lettuce", "spinach", "healthy"]
+  },
+  "cucumber": {
+    "emoji": "🥒",
+    "keywords": ["vegetable", "cucumber", "green", "salad", "refreshing"]
+  },
+  "pizza": {
+    "emoji": "🍕",
+    "keywords": ["food", "pizza", "cheese", "fast food", "slice"]
+  },
+  "hamburger": {
+    "emoji": "🍔",
+    "keywords": ["food", "burger", "fast food", "lunch", "meat"]
+  },
+  "taco": {
+    "emoji": "🌮",
+    "keywords": ["food", "taco", "mexican", "spicy", "meat"]
+  },
+  "pot_of_food": {
+    "emoji": "🍲",
+    "keywords": ["meal", "cooked", "stew", "pot", "hot"]
+  },
+  "soft_ice_cream": {
+    "emoji": "🍦",
+    "keywords": ["dessert", "ice cream", "cold", "sweet", "summer"]
+  },
+  "shortcake": {
+    "emoji": "🍰",
+    "keywords": ["cake", "dessert", "sweet", "strawberry", "bake"]
+  },
+  "cupcake": {
+    "emoji": "🧁",
+    "keywords": ["cake", "dessert", "small", "sweet", "birthday"]
+  },
+  "doughnut": {
+    "emoji": "🍩",
+    "keywords": ["dessert", "snack", "sweet", "breakfast", "donut"]
+  },
+  "hot_beverage": {
+    "emoji": "☕",
+    "keywords": ["drink", "coffee", "tea", "warm", "cup"]
+  },
+  "tropical_drink": {
+    "emoji": "🍹",
+    "keywords": ["drink", "cocktail", "beach", "alcohol", "party"]
+  },
+  "beer_mug": {
+    "emoji": "🍺",
+    "keywords": ["drink", "beer", "alcohol", "mug", "party"]
+  },
+  "bubble_tea": {
+    "emoji": "🧋",
+    "keywords": ["drink", "bubble", "tea", "sweet", "taiwan"]
+  },
+
+  "globe_africa_europe": {
+    "emoji": "🌍",
+    "keywords": ["earth", "globe", "world", "africa", "europe", "planet"]
+  },
+  "compass": {
+    "emoji": "🧭",
+    "keywords": ["navigation", "direction", "north", "travel", "map"]
+  },
+  "mountain": {
+    "emoji": "⛰",
+    "keywords": ["mountain", "hiking", "climb", "peak", "nature"]
+  },
+  "camping": {
+    "emoji": "🏕",
+    "keywords": ["camping", "tent", "outdoors", "nature", "forest"]
+  },
+  "beach_with_umbrella": {
+    "emoji": "🏖",
+    "keywords": ["beach", "umbrella", "vacation", "sea", "sand"]
+  },
+  "desert": {
+    "emoji": "🏜",
+    "keywords": ["desert", "dry", "sand", "cactus", "heat"]
+  },
+  "post_office": {
+    "emoji": "🏤",
+    "keywords": ["mail", "post", "letters", "parcel", "delivery"]
+  },
+  "hospital": {
+    "emoji": "🏥",
+    "keywords": ["hospital", "medical", "doctor", "emergency", "health"]
+  },
+  "bank": {
+    "emoji": "🏦",
+    "keywords": ["bank", "money", "finance", "cash", "building"]
+  },
+  "hotel": {
+    "emoji": "🏨",
+    "keywords": ["hotel", "stay", "travel", "room", "accommodation"]
+  },
+  "love_hotel": {
+    "emoji": "🏩",
+    "keywords": ["love", "motel", "romance", "hotel", "stay"]
+  },
+  "convenience_store": {
+    "emoji": "🏪",
+    "keywords": ["store", "shop", "groceries", "market", "retail"]
+  },
+  "school": {
+    "emoji": "🏫",
+    "keywords": ["school", "education", "students", "learning"]
+  },
+  "department_store": {
+    "emoji": "🏬",
+    "keywords": ["shopping", "retail", "store", "mall"]
+  },
+  "desert_island": {
+    "emoji": "🏝",
+    "keywords": ["island", "deserted", "beach", "tropical"]
+  },
+  "church": {
+    "emoji": "⛪",
+    "keywords": ["church", "religion", "christian", "faith", "worship"]
+  },
+  "mosque": {
+    "emoji": "🕌",
+    "keywords": ["mosque", "islam", "muslim", "worship"]
+  },
+  "hindu_temple": {
+    "emoji": "🛕",
+    "keywords": ["hindu", "temple", "worship", "religion", "india"]
+  },
+  "synagogue": {
+    "emoji": "🕍",
+    "keywords": ["synagogue", "jewish", "religion", "worship"]
+  },
+  "shinto_shrine": {
+    "emoji": "⛩",
+    "keywords": ["shrine", "japan", "religion", "temple"]
+  },
+  "kaaba": {
+    "emoji": "🕋",
+    "keywords": ["kaaba", "mecca", "islam", "hajj", "worship"]
+  },
+  "fountain": {
+    "emoji": "⛲",
+    "keywords": ["fountain", "water", "park", "scenery"]
+  },
+  "tent": {
+    "emoji": "⛺",
+    "keywords": ["tent", "camp", "outdoor", "camping"]
+  },
+  "national_park": {
+    "emoji": "🏞",
+    "keywords": ["park", "nature", "outdoors", "forest"]
+  },
+  "hourglass_done": {
+    "emoji": "⌛",
+    "keywords": ["hourglass", "time", "finished", "end", "countdown"]
+  },
+  "hourglass_not_done": {
+    "emoji": "⏳",
+    "keywords": ["hourglass", "time", "running", "waiting", "loading"]
+  },
+  "watch": {
+    "emoji": "⌚",
+    "keywords": ["watch", "time", "wristwatch", "clock"]
+  },
+  "alarm_clock": {
+    "emoji": "⏰",
+    "keywords": ["alarm", "clock", "wake", "reminder", "ring"]
+  },
+  "stopwatch": {
+    "emoji": "⏱",
+    "keywords": ["stopwatch", "timer", "time", "track", "measure"]
+  },
+  "timer_clock": {
+    "emoji": "⏲",
+    "keywords": ["timer", "clock", "cook", "countdown", "set"]
+  },
+  "mantelpiece_clock": {
+    "emoji": "🕰",
+    "keywords": ["clock", "antique", "time", "home", "vintage"]
+  },
+  "fire": {
+    "emoji": "🔥",
+    "keywords": ["fire", "flame", "burn", "hot", "lit"]
+  },
+  "droplet": {
+    "emoji": "💧",
+    "keywords": ["droplet", "water", "liquid", "wet", "drip"]
+  },
+  "jack_o_lantern": {
+    "emoji": "🎃",
+    "keywords": ["halloween", "pumpkin", "jack-o-lantern", "spooky"]
+  },
+  "christmas_tree": {
+    "emoji": "🎄",
+    "keywords": ["christmas", "tree", "holiday", "xmas", "festive"]
+  },
+  "fireworks": {
+    "emoji": "🎆",
+    "keywords": ["fireworks", "celebration", "explosion", "festival"]
+  },
+  "sparkler": {
+    "emoji": "🎇",
+    "keywords": ["sparkler", "celebrate", "light", "party", "shine"]
+  },
+
+  "firecracker": {
+    "emoji": "🧨",
+    "keywords": ["firecracker", "celebration", "explosive", "festival"]
+  },
+  "sparkles": {
+    "emoji": "✨",
+    "keywords": ["sparkles", "shiny", "magic", "twinkle", "bright"]
+  },
+  "balloon": {
+    "emoji": "🎈",
+    "keywords": ["balloon", "party", "celebration", "float", "fun"]
+  },
+  "party_popper": {
+    "emoji": "🎉",
+    "keywords": ["party", "celebrate", "confetti", "popper", "event"]
+  },
+  "confetti_ball": {
+    "emoji": "🎊",
+    "keywords": ["confetti", "party", "ball", "celebration", "color"]
+  },
+  "ribbon": {
+    "emoji": "🎀",
+    "keywords": ["ribbon", "gift", "bow", "decorate", "present"]
+  },
+  "wrapped_gift": {
+    "emoji": "🎁",
+    "keywords": ["gift", "present", "wrapped", "box", "surprise"]
+  },
+  "reminder_ribbon": {
+    "emoji": "🎗",
+    "keywords": ["ribbon", "awareness", "cause", "reminder", "support"]
+  },
+  "admission_tickets": {
+    "emoji": "🎟",
+    "keywords": ["ticket", "admission", "event", "pass", "entry"]
+  },
+  "ticket": {
+    "emoji": "🎫",
+    "keywords": ["ticket", "entry", "movie", "show", "concert"]
+  },
+  "trophy": {
+    "emoji": "🏆",
+    "keywords": ["trophy", "winner", "award", "prize", "achievement"]
+  },
+  "sports_medal": {
+    "emoji": "🏅",
+    "keywords": ["medal", "sports", "achievement", "winner", "award"]
+  },
+  "soccer_ball": {
+    "emoji": "⚽",
+    "keywords": ["soccer", "football", "sports", "goal", "kick"]
+  },
+  "baseball": {
+    "emoji": "⚾",
+    "keywords": ["baseball", "sports", "bat", "pitch", "ball"]
+  },
+  "softball": {
+    "emoji": "🥎",
+    "keywords": ["softball", "sports", "bat", "ball", "game"]
+  },
+  "basketball": {
+    "emoji": "🏀",
+    "keywords": ["basketball", "sports", "hoop", "dunk", "dribble"]
+  },
+  "volleyball": {
+    "emoji": "🏐",
+    "keywords": ["volleyball", "sports", "net", "beach", "serve"]
+  },
+  "american_football": {
+    "emoji": "🏈",
+    "keywords": ["football", "american", "sports", "touchdown", "NFL"]
+  },
+  "rugby_football": {
+    "emoji": "🏉",
+    "keywords": ["rugby", "sports", "tackle", "try", "oval ball"]
+  },
+  "tennis": {
+    "emoji": "🎾",
+    "keywords": ["tennis", "racket", "ball", "sports", "serve"]
+  },
+  "flying_disc": {
+    "emoji": "🥏",
+    "keywords": ["flying disc", "frisbee", "sports", "throw", "outdoor"]
+  },
+  "bowling": {
+    "emoji": "🎳",
+    "keywords": ["bowling", "pins", "ball", "strike", "sports"]
+  },
+  "cricket": {
+    "emoji": "🏏",
+    "keywords": ["cricket", "bat", "ball", "sports", "wicket"]
+  },
+  "field_hockey": {
+    "emoji": "🏑",
+    "keywords": ["hockey", "field", "stick", "ball", "sports"]
+  },
+  "ice_hockey": {
+    "emoji": "🏒",
+    "keywords": ["hockey", "ice", "stick", "puck", "sports"]
+  },
+  "lacrosse": {
+    "emoji": "🥍",
+    "keywords": ["lacrosse", "stick", "net", "sports", "ball"]
+  },
+  "ping_pong": {
+    "emoji": "🏓",
+    "keywords": ["ping pong", "table tennis", "racket", "ball", "sports"]
+  },
+  "badminton": {
+    "emoji": "🏸",
+    "keywords": ["badminton", "shuttlecock", "racket", "sports", "net"]
+  },
+  "boxing_glove": {
+    "emoji": "🥊",
+    "keywords": ["boxing", "glove", "fight", "punch", "sports"]
+  },
+  "martial_arts_uniform": {
+    "emoji": "🥋",
+    "keywords": ["martial arts", "karate", "judo", "uniform", "sports"]
+  },
+  "goal_net": {
+    "emoji": "🥅",
+    "keywords": ["goal", "net", "sports", "score", "football"]
+  },
+  "flag_in_hole": {
+    "emoji": "⛳",
+    "keywords": ["golf", "flag", "hole", "green", "sports"]
+  },
+  "ice_skate": {
+    "emoji": "⛸",
+    "keywords": ["ice skating", "skate", "winter", "sports", "ice"]
+  },
+  "fishing_pole": {
+    "emoji": "🎣",
+    "keywords": ["fishing", "pole", "hook", "outdoor", "reel"]
+  },
+  "diving_mask": {
+    "emoji": "🤿",
+    "keywords": ["diving", "mask", "snorkeling", "water", "underwater"]
+  },
+  "running_shirt": {
+    "emoji": "🎽",
+    "keywords": ["running", "shirt", "sports", "track", "race"]
+  },
+  "skis": {
+    "emoji": "🎿",
+    "keywords": ["skiing", "winter", "snow", "sports", "skis"]
+  },
+  "sled": {
+    "emoji": "🛷",
+    "keywords": ["sled", "snow", "winter", "ride", "slide"]
+  },
+  "curling_stone": {
+    "emoji": "🥌",
+    "keywords": ["curling", "stone", "ice", "sports", "slide"]
+  },
+  "bullseye": {
+    "emoji": "🎯",
+    "keywords": ["target", "goal", "aim", "focus", "bullseye"]
+  },
+  "yo-yo": {
+    "emoji": "🪀",
+    "keywords": ["yo-yo", "toy", "fun", "string", "spin"]
+  },
+  "kite": {
+    "emoji": "🪁",
+    "keywords": ["kite", "fly", "wind", "outdoor", "toy"]
+  },
+  "8 ball": {
+    "emoji": "🎱",
+    "keywords": ["8 ball", "billiards", "pool", "magic 8 ball", "game"]
+  },
+  "crystal ball": {
+    "emoji": "🔮",
+    "keywords": ["crystal ball", "fortune", "magic", "future", "mystic"]
+  },
+  "magic wand": {
+    "emoji": "🪄",
+    "keywords": ["magic wand", "spell", "wizard", "magic", "fantasy"]
+  },
+  "nazar amulet": {
+    "emoji": "🧿",
+    "keywords": ["nazar", "amulet", "protection", "evil eye", "symbol"]
+  },
+  "hamsa": {
+    "emoji": "🪬",
+    "keywords": ["hamsa", "hand", "protection", "symbol", "spiritual"]
+  },
+  "video game pad": {
+    "emoji": "🎮",
+    "keywords": ["video game", "controller", "gaming", "console", "pad"]
+  },
+  "joystick": {
+    "emoji": "🕹",
+    "keywords": ["joystick", "arcade", "game", "controller", "gaming"]
+  },
+  "slot machine": {
+    "emoji": "🎰",
+    "keywords": ["slot machine", "casino", "gambling", "jackpot", "game"]
+  },
+  "game die": {
+    "emoji": "🎲",
+    "keywords": ["dice", "roll", "game", "luck", "board game"]
+  },
+  "puzzle piece": {
+    "emoji": "🧩",
+    "keywords": ["puzzle", "piece", "game", "fit", "logic"]
+  },
+  "teddy bear": {
+    "emoji": "🧸",
+    "keywords": ["teddy bear", "toy", "cute", "plush", "gift"]
+  },
+  "piñata": {
+    "emoji": "🪅",
+    "keywords": ["piñata", "party", "celebration", "candy", "fun"]
+  },
+  "nesting doll": {
+    "emoji": "🪆",
+    "keywords": ["nesting doll", "matryoshka", "toy", "stack", "russian"]
+  },
+  "spade suit": {
+    "emoji": "♠",
+    "keywords": ["spade", "card", "suit", "game", "black"]
+  },
+  "heart suit": {
+    "emoji": "♥",
+    "keywords": ["heart", "card", "suit", "love", "red"]
+  },
+  "club suit": {
+    "emoji": "♣",
+    "keywords": ["club", "card", "suit", "game", "black"]
+  },
+  "chess pawn": {
+    "emoji": "♟",
+    "keywords": ["chess", "pawn", "strategy", "game", "piece"]
+  },
+  "joker": {
+    "emoji": "🃏",
+    "keywords": ["joker", "card", "wild", "game", "deck"]
+  },
+  "mahjong red dragon": {
+    "emoji": "🀄",
+    "keywords": ["mahjong", "red dragon", "tile", "game", "chinese"]
+  },
+  "flower playing cards": {
+    "emoji": "🎴",
+    "keywords": ["flower card", "hanafuda", "japanese", "game", "deck"]
+  },
+  "performing arts": {
+    "emoji": "🎭",
+    "keywords": ["performing", "arts", "theater", "drama", "stage", "acting"]
+  },
+  "framed picture": {
+    "emoji": "🖼",
+    "keywords": ["picture", "frame", "art", "painting", "gallery", "image"]
+  },
+  "artist palette": {
+    "emoji": "🎨",
+    "keywords": ["artist", "palette", "painting", "art", "color", "paint"]
+  },
+  "thread": {
+    "emoji": "🧵",
+    "keywords": ["thread", "sewing", "craft", "fabric", "needlework"]
+  },
+  "sewing needle with thread": {
+    "emoji": "🪡",
+    "keywords": ["needle", "thread", "sewing", "craft", "textile", "tailor"]
+  },
+  "yarn": {
+    "emoji": "🧶",
+    "keywords": ["yarn", "knitting", "crochet", "thread", "craft", "wool"]
+  },
+  "knot": {
+    "emoji": "🪢",
+    "keywords": ["knot", "tie", "rope", "string", "loop", "secure"]
+  },
+  "glasses": {
+    "emoji": "👓",
+    "keywords": ["glasses", "eyewear", "vision", "reading", "optical"]
+  },
+  "sunglasses": {
+    "emoji": "🕶",
+    "keywords": ["sunglasses", "shades", "cool", "sun", "eyewear"]
+  },
+  "goggles": {
+    "emoji": "🥽",
+    "keywords": ["goggles", "protection", "safety", "lab", "swim"]
+  },
+  "lab coat": {
+    "emoji": "🥼",
+    "keywords": ["lab coat", "scientist", "doctor", "research", "white coat"]
+  },
+  "safety vest": {
+    "emoji": "🦺",
+    "keywords": ["safety", "vest", "construction", "workwear", "high-visibility"]
+  },
+  "necktie": {
+    "emoji": "👔",
+    "keywords": ["tie", "necktie", "formal", "business", "office"]
+  },
+  "t-shirt": {
+    "emoji": "👕",
+    "keywords": ["t-shirt", "shirt", "clothes", "casual", "top"]
+  },
+  "jeans": {
+    "emoji": "👖",
+    "keywords": ["jeans", "pants", "denim", "clothing", "casual"]
+  },
+  "scarf": {
+    "emoji": "🧣",
+    "keywords": ["scarf", "warm", "winter", "clothing", "neckwear"]
+  },
+  "gloves": {
+    "emoji": "🧤",
+    "keywords": ["gloves", "winter", "hands", "warm", "clothing"]
+  },
+  "coat": {
+    "emoji": "🧥",
+    "keywords": ["coat", "jacket", "outerwear", "clothing", "winter"]
+  },
+  "socks": {
+    "emoji": "🧦",
+    "keywords": ["socks", "feet", "clothing", "warm", "footwear"]
+  },
+  "dress": {
+    "emoji": "👗",
+    "keywords": ["dress", "clothing", "fashion", "woman", "wear"]
+  },
+  "kimono": {
+    "emoji": "👘",
+    "keywords": ["kimono", "japan", "traditional", "clothing", "robe"]
+  },
+  "sari": {
+    "emoji": "🥻",
+    "keywords": ["sari", "india", "traditional", "clothing", "ethnic"]
+  },
+  "one-piece suit": {
+    "emoji": "🩱",
+    "keywords": ["one-piece", "swimsuit", "swimwear", "clothing", "beach"]
+  },
+  "briefs": {
+    "emoji": "🩲",
+    "keywords": ["briefs", "underwear", "underpants", "clothing", "intimate"]
+  },
+  "shorts": {
+    "emoji": "🩳",
+    "keywords": ["shorts", "pants", "summer", "clothing", "casual"]
+  },
+  "bikini": {
+    "emoji": "👙",
+    "keywords": ["bikini", "swimwear", "beach", "clothing", "summer"]
+  },
+  "woman's shirt": {
+    "emoji": "👚",
+    "keywords": ["shirt", "blouse", "clothing", "top", "woman"]
+  },
+  "purse": {
+    "emoji": "👛",
+    "keywords": ["purse", "wallet", "money", "accessory", "fashion"]
+  },
+  "handbag": {
+    "emoji": "👜",
+    "keywords": ["handbag", "bag", "purse", "fashion", "accessory"]
+  },
+  "clutch bag": {
+    "emoji": "👝",
+    "keywords": ["clutch", "bag", "purse", "fashion", "evening"]
+  },
+  "shopping bags": {
+    "emoji": "🛍",
+    "keywords": ["shopping", "bags", "store", "purchases", "retail"]
+  },
+  "backpack": {
+    "emoji": "🎒",
+    "keywords": ["backpack", "bag", "school", "travel", "carry"]
+  },
+  "thong sandals": {
+    "emoji": "🩴",
+    "keywords": ["sandals", "flip-flops", "beach", "summer", "footwear"]
+  },
+  "man's shoe": {
+    "emoji": "👞",
+    "keywords": ["shoe", "man's", "footwear", "leather", "formal"]
+  },
+  "running shoe": {
+    "emoji": "👟",
+    "keywords": ["sneaker", "running", "shoe", "sports", "fitness"]
+  },
+  "hiking boot": {
+    "emoji": "🥾",
+    "keywords": ["boot", "hiking", "outdoor", "footwear", "trekking"]
+  },
+  "flat shoe": {
+    "emoji": "🥿",
+    "keywords": ["flat", "shoe", "footwear", "woman", "casual"]
+  },
+  "high-heeled shoe": {
+    "emoji": "👠",
+    "keywords": ["heel", "shoe", "fashion", "footwear", "woman"]
+  },
+  "woman's sandal": {
+    "emoji": "👡",
+    "keywords": ["sandal", "footwear", "woman", "shoe", "summer"]
+  },
+  "ballet shoes": {
+    "emoji": "🩰",
+    "keywords": ["ballet", "shoes", "dance", "perform", "slippers"]
+  },
+  "woman's boot": {
+    "emoji": "👢",
+    "keywords": ["boot", "footwear", "fashion", "woman", "winter"]
+  },
+  "crown": {
+    "emoji": "👑",
+    "keywords": ["crown", "royalty", "king", "queen", "noble"]
+  },
+  "woman's hat": {
+    "emoji": "👒",
+    "keywords": ["hat", "woman", "fashion", "sun", "accessory"]
+  },
+  "top hat": {
+    "emoji": "🎩",
+    "keywords": ["top hat", "gentleman", "formal", "magic", "classic"]
+  },
+  "graduation cap": {
+    "emoji": "🎓",
+    "keywords": ["graduation", "cap", "education", "student", "graduate"]
+  },
+  "billed cap": {
+    "emoji": "🧢",
+    "keywords": ["cap", "hat", "billed", "baseball", "casual"]
+  },
+  "military helmet": {
+    "emoji": "🪖",
+    "keywords": ["helmet", "military", "army", "combat", "protect"]
+  },
+  "rescue worker's helmet": {
+    "emoji": "⛑",
+    "keywords": ["helmet", "rescue", "emergency", "first aid", "safety"]
+  },
+  "prayer beads": {
+    "emoji": "📿",
+    "keywords": ["prayer", "beads", "religion", "meditation", "rosary"]
+  },
+  "lipstick": {
+    "emoji": "💄",
+    "keywords": ["lipstick", "makeup", "beauty", "cosmetic", "fashion"]
+  },
+  "ring": {
+    "emoji": "💍",
+    "keywords": ["ring", "jewelry", "wedding", "engagement", "diamond"]
+  },
+  "gemstone": {
+    "emoji": "💎",
+    "keywords": ["gemstone", "jewel", "diamond", "crystal", "precious"]
+  },
+  "loudspeaker": {
+    "emoji": "📢",
+    "keywords": ["announcement", "megaphone", "alert", "broadcast", "sound"]
+  },
+  "musical score": {
+    "emoji": "🎼",
+    "keywords": ["music", "notation", "sheet", "composition", "melody"]
+  },
+  "musical note": {
+    "emoji": "🎵",
+    "keywords": ["music", "note", "sound", "song", "melody"]
+  },
+  "musical notes": {
+    "emoji": "🎶",
+    "keywords": ["music", "notes", "melody", "sound", "tune"]
+  },
+  "studio microphone": {
+    "emoji": "🎙",
+    "keywords": ["microphone", "recording", "podcast", "studio", "audio"]
+  },
+  "microphone": {
+    "emoji": "🎤",
+    "keywords": ["singing", "performance", "karaoke", "music", "sound"]
+  },
+  "headphone": {
+    "emoji": "🎧",
+    "keywords": ["music", "audio", "listen", "sound", "earphones"]
+  },
+  "saxophone": {
+    "emoji": "🎷",
+    "keywords": ["music", "instrument", "jazz", "brass", "sound"]
+  },
+  "accordion": {
+    "emoji": "🪗",
+    "keywords": ["music", "instrument", "folk", "squeeze", "concertina"]
+  },
+  "guitar": {
+    "emoji": "🎸",
+    "keywords": ["music", "instrument", "rock", "strings", "acoustic"]
+  },
+  "musical keyboard": {
+    "emoji": "🎹",
+    "keywords": ["music", "piano", "keyboard", "instrument", "melody"]
+  },
+  "trumpet": {
+    "emoji": "🎺",
+    "keywords": ["music", "instrument", "brass", "sound", "jazz"]
+  },
+  "violin": {
+    "emoji": "🎻",
+    "keywords": ["music", "instrument", "strings", "orchestra", "classical"]
+  },
+  "banjo": {
+    "emoji": "🪕",
+    "keywords": ["music", "instrument", "folk", "strings", "country"]
+  },
+  "drum": {
+    "emoji": "🥁",
+    "keywords": ["music", "instrument", "percussion", "beat", "rhythm"]
+  },
+  "long drum": {
+    "emoji": "🪘",
+    "keywords": ["music", "instrument", "percussion", "tribal", "beat"]
+  },
+  "radio": {
+    "emoji": "📻",
+    "keywords": ["music", "broadcast", "fm", "am", "tuner"]
+  },
+  "telephone receiver": {
+    "emoji": "📞",
+    "keywords": ["phone", "call", "receiver", "communication", "dial"]
+  },
+  "mobile phone": {
+    "emoji": "📱",
+    "keywords": ["smartphone", "call", "text", "device", "communication"]
+  },
+  "mobile phone with arrow": {
+    "emoji": "📲",
+    "keywords": ["call", "incoming", "message", "communication", "smartphone"]
+  },
+  "telephone": {
+    "emoji": "☎️",
+    "keywords": ["call", "landline", "phone", "dial", "communication"]
+  },
+  "pager": {
+    "emoji": "📟",
+    "keywords": ["device", "beeper", "alert", "old tech", "message"]
+  },
+  "fax machine": {
+    "emoji": "📠",
+    "keywords": ["fax", "machine", "document", "office", "send"]
+  },
+  "battery": {
+    "emoji": "🔋",
+    "keywords": ["power", "charge", "energy", "battery", "device"]
+  },
+  "electric plug": {
+    "emoji": "🔌",
+    "keywords": ["plug", "power", "charge", "electricity", "energy"]
+  },
+  "laptop": {
+    "emoji": "💻",
+    "keywords": ["computer", "work", "technology", "device", "internet"]
+  },
+  "desktop computer": {
+    "emoji": "🖥️",
+    "keywords": ["computer", "monitor", "pc", "technology", "device"]
+  },
+  "printer": {
+    "emoji": "🖨️",
+    "keywords": ["office", "print", "document", "device", "paper"]
+  },
+  "keyboard": {
+    "emoji": "⌨️",
+    "keywords": ["typing", "computer", "input", "device", "text"]
+  },
+  "computer mouse": {
+    "emoji": "🖱️",
+    "keywords": ["click", "device", "computer", "navigation", "cursor"]
+  },
+  "trackball": {
+    "emoji": "🖲️",
+    "keywords": ["input", "device", "computer", "mouse", "navigation"]
+  },
+  "computer disk": {
+    "emoji": "💽",
+    "keywords": ["storage", "disk", "data", "technology", "retro"]
+  },
+  "floppy disk": {
+    "emoji": "💾",
+    "keywords": ["save", "storage", "retro", "technology", "file"]
+  },
+  "optical disk": {
+    "emoji": "💿",
+    "keywords": ["cd", "dvd", "media", "disk", "storage"]
+  },
+  "dvd": {
+    "emoji": "📀",
+    "keywords": ["disk", "media", "movie", "storage", "optical"]
+  },
+  "abacus": {
+    "emoji": "🧮",
+    "keywords": ["math", "calculator", "counting", "tool", "school"]
+  },
+  "movie camera": {
+    "emoji": "🎥",
+    "keywords": ["film", "record", "cinema", "video", "shoot"]
+  },
+  "film frames": {
+    "emoji": "🎞️",
+    "keywords": ["film", "reel", "movie", "cinema", "media"]
+  },
+  "film projector": {
+    "emoji": "📽️",
+    "keywords": ["cinema", "movie", "projection", "media", "film"]
+  },
+  "clapper board": {
+    "emoji": "🎬",
+    "keywords": ["movie", "film", "director", "cinema", "shoot"]
+  },
+  "television": {
+    "emoji": "📺",
+    "keywords": ["tv", "media", "entertainment", "screen", "broadcast"]
+  },
+  "camera": {
+    "emoji": "📷",
+    "keywords": ["photo", "picture", "shoot", "photography", "snap"]
+  },
+  "camera with flash": {
+    "emoji": "📸",
+    "keywords": ["photo", "flash", "photography", "camera", "snap"]
+  },
+  "video camera": {
+    "emoji": "📹",
+    "keywords": ["record", "film", "media", "video", "camera"]
+  },
+  "videocassette": {
+    "emoji": "📼",
+    "keywords": [
+      "vhs",
+      "tape",
+      "retro",
+      "video",
+      "movie"
+    ]
+  },
+  "candle": {
+    "emoji": "🕯️",
+    "keywords": ["light", "fire", "wax", "ceremony", "glow"]
+  },
+  "light bulb": {
+    "emoji": "💡",
+    "keywords": ["idea", "electric", "light", "innovation", "inspiration"]
+  },
+  "flashlight": {
+    "emoji": "🔦",
+    "keywords": ["light", "torch", "dark", "search", "tool"]
+  },
+  "red paper lantern": {
+    "emoji": "🏮",
+    "keywords": ["lantern", "festival", "asia", "light", "culture"]
+  },
+  "diya lamp": {
+    "emoji": "🪔",
+    "keywords": ["diwali", "lamp", "light", "festival", "hindu"]
+  },
+  "notebook with decorative cover": {
+    "emoji": "📔",
+    "keywords": ["book", "note", "diary", "journal", "write"]
+  },
+  "closed book": {
+    "emoji": "📕",
+    "keywords": ["book", "read", "literature", "library", "education"]
+  },
+  "open book": {
+    "emoji": "📖",
+    "keywords": ["read", "book", "literature", "pages", "learning"]
+  },
+  "green book": {
+    "emoji": "📗",
+    "keywords": ["book", "green", "study", "literature", "education"]
+  },
+  "blue book": {
+    "emoji": "📘",
+    "keywords": ["book", "blue", "read", "library", "education"]
+  },
+  "orange book": {
+    "emoji": "📙",
+    "keywords": ["book", "orange", "read", "library", "literature"]
+  },
+  "books": {
+    "emoji": "📚",
+    "keywords": ["reading", "library", "study", "literature", "education"]
+  },
+  "notebook": {
+    "emoji": "📓",
+    "keywords": ["note", "write", "school", "journal", "study"]
+  },
+  "ledger": {
+    "emoji": "📒",
+    "keywords": ["accounting", "finance", "record", "bookkeeping", "log"]
+  },
+  "page with curl": {
+    "emoji": "📃",
+    "keywords": ["document", "paper", "scroll", "note", "sheet"]
+  },
+  "page facing up": {
+    "emoji": "📄",
+    "keywords": ["paper", "document", "print", "note", "file"]
+  },
+  "bookmark tabs": {
+    "emoji": "📑",
+    "keywords": ["bookmark", "tabs", "organize", "file", "document"]
+  },
+  "bar chart": {
+    "emoji": "📊",
+    "keywords": ["data", "statistics", "graph", "report", "analytics"]
+  },
+  "tear-off calendar": {
+    "emoji": "📆",
+    "keywords": ["calendar", "date", "schedule", "planner", "day"]
+  },
+  "calendar": {
+    "emoji": "📅",
+    "keywords": ["date", "planner", "schedule", "month", "organize"]
+  },
+  "spiral calendar": {
+    "emoji": "🗓️",
+    "keywords": ["calendar", "spiral", "schedule", "organize", "planning"]
+  },
+  "card file box": {
+    "emoji": "🗃️",
+    "keywords": ["storage", "files", "archive", "documents", "box"]
+  },
+  "ballot box with ballot": {
+    "emoji": "🗳️",
+    "keywords": ["vote", "election", "ballot", "box", "poll"]
+  },
+  "file cabinet": {
+    "emoji": "🗄️",
+    "keywords": ["storage", "documents", "files", "cabinet", "archive"]
+  },
+  "clipboard": {
+    "emoji": "📋",
+    "keywords": ["task", "checklist", "notes", "clipboard", "document"]
+  },
+  "file folder": {
+    "emoji": "📁",
+    "keywords": ["folder", "documents", "storage", "file", "directory"]
+  },
+  "open file folder": {
+    "emoji": "📂",
+    "keywords": ["open", "folder", "file", "documents", "storage"]
+  },
+  "card index dividers": {
+    "emoji": "🗂️",
+    "keywords": ["organize", "index", "divider", "file", "card"]
+  },
+  "rolled-up newspaper": {
+    "emoji": "🗞️",
+    "keywords": ["news", "paper", "roll", "article", "journalism"]
+  },
+  "newspaper": {
+    "emoji": "📰",
+    "keywords": ["news", "press", "article", "journal", "media"]
+  },
+  "card index": {
+    "emoji": "📇",
+    "keywords": ["contacts", "index", "rolodex", "organize", "reference"]
+  },
+  "chart increasing": {
+    "emoji": "📈",
+    "keywords": ["growth", "up", "trend", "positive", "statistics"]
+  },
+  "chart decreasing": {
+    "emoji": "📉",
+    "keywords": ["decline", "down", "trend", "negative", "loss"]
+  },
+  "pushpin": {
+    "emoji": "📌",
+    "keywords": ["pin", "location", "reminder", "mark", "sticky"]
+  },
+  "round pushpin": {
+    "emoji": "📍",
+    "keywords": ["location", "map", "pin", "mark", "point"]
+  },
+  "paperclip": {
+    "emoji": "📎",
+    "keywords": ["clip", "document", "attach", "link", "hold"]
+  },
+  "linked paperclips": {
+    "emoji": "🖇",
+    "keywords": ["clip", "document", "attach", "together", "files"]
+  },
+  "straight ruler": {
+    "emoji": "📏",
+    "keywords": ["measure", "length", "ruler", "tool", "geometry"]
+  },
+  "triangular ruler": {
+    "emoji": "📐",
+    "keywords": ["measure", "geometry", "triangle", "tool", "draft"]
+  },
+  "scissors": {
+    "emoji": "✂️",
+    "keywords": ["cut", "tool", "edit", "clip", "trim"]
+  },
+  "pen": {
+    "emoji": "🖊️",
+    "keywords": ["write", "ink", "notes", "sign", "drawing"]
+  },
+  "fountain pen": {
+    "emoji": "🖋️",
+    "keywords": ["write", "pen", "ink", "signature", "classic"]
+  },
+  "black nib": {
+    "emoji": "✒️",
+    "keywords": ["pen", "ink", "write", "signature", "calligraphy"]
+  },
+  "memo": {
+    "emoji": "📝",
+    "keywords": ["write", "notes", "document", "text", "reminder"]
+  },
+  "pencil": {
+    "emoji": "✏️",
+    "keywords": ["write", "edit", "draft", "drawing", "note"]
+  },
+  "crayon": {
+    "emoji": "🖍️",
+    "keywords": ["draw", "color", "art", "kid", "sketch"]
+  },
+  "paintbrush": {
+    "emoji": "🖌️",
+    "keywords": ["paint", "draw", "art", "color", "design"]
+  },
+  "magnifying glass tilted left": {
+    "emoji": "🔍",
+    "keywords": ["search", "zoom", "inspect", "find", "look"]
+  },
+  "magnifying glass tilted right": {
+    "emoji": "🔎",
+    "keywords": ["search", "zoom", "inspect", "find", "detail"]
+  },
+  "locked with pen": {
+    "emoji": "🔏",
+    "keywords": ["secure", "sign", "document", "lock", "edit"]
+  },
+  "locked with key": {
+    "emoji": "🔐",
+    "keywords": ["secure", "private", "lock", "key", "access"]
+  },
+  "locked": {
+    "emoji": "🔒",
+    "keywords": ["security", "private", "safe", "lock", "protection"]
+  },
+  "unlocked": {
+    "emoji": "🔓",
+    "keywords": ["access", "open", "available", "unlock", "unlocked"]
+  },
+  "key": {
+    "emoji": "🔑",
+    "keywords": ["access", "unlock", "door", "entry", "password"]
+  },
+  "old key": {
+    "emoji": "🗝",
+    "keywords": ["vintage", "unlock", "access", "key", "antique"]
+  },
+  "hammer": {
+    "emoji": "🔨",
+    "keywords": ["tool", "build", "fix", "construction", "repair"]
+  },
+  "axe": {
+    "emoji": "🪓",
+    "keywords": ["chop", "cut", "wood", "tool", "log"]
+  },
+  "pick": {
+    "emoji": "⛏",
+    "keywords": ["mine", "dig", "tool", "pickaxe", "underground"]
+  },
+  "hammer and pick": {
+    "emoji": "⚒",
+    "keywords": ["mining", "tools", "construction", "build", "work"]
+  },
+  "hammer and wrench": {
+    "emoji": "🛠",
+    "keywords": ["tools", "repair", "build", "fix", "maintenance"]
+  },
+
+  "sword": {
+    "emoji": "🗡",
+    "keywords": ["weapon", "blade", "fight", "battle", "medieval"]
+  },
+  "crossed swords": {
+    "emoji": "⚔",
+    "keywords": ["battle", "fight", "war", "weapon", "duel"]
+  },
+  "water gun": {
+    "emoji": "🔫",
+    "keywords": ["toy", "squirt", "shoot", "water", "gun"]
+  },
+  "boomerang": {
+    "emoji": "🪃",
+    "keywords": ["return", "throw", "curve", "weapon", "fun"]
+  },
+  "bow and arrow": {
+    "emoji": "🏹",
+    "keywords": ["archery", "weapon", "target", "aim", "hunt"]
+  },
+  "shield": {
+    "emoji": "🛡",
+    "keywords": ["protection", "defend", "armor", "security", "block"]
+  },
+  "carpentry saw": {
+    "emoji": "🪚",
+    "keywords": ["tool", "wood", "cut", "carpentry", "construction"]
+  },
+  "wrench": {
+    "emoji": "🔧",
+    "keywords": ["tool", "fix", "repair", "adjust", "mechanic"]
+  },
+  "screwdriver": {
+    "emoji": "🪛",
+    "keywords": ["tool", "fix", "screw", "repair", "manual"]
+  },
+  "bolt and nut": {
+    "emoji": "🔩",
+    "keywords": ["hardware", "tool", "mechanic", "tighten", "construction"]
+  },
+  "gear": {
+    "emoji": "⚙",
+    "keywords": ["settings", "mechanism", "engineering", "rotate", "machine"]
+  },
+  "clamp": {
+    "emoji": "🗜",
+    "keywords": ["tool", "compress", "hold", "secure", "fix"]
+  },
+  "balance scale": {
+    "emoji": "⚖",
+    "keywords": ["justice", "law", "weigh", "fairness", "court"]
+  },
+  "white cane": {
+    "emoji": "🦯",
+    "keywords": ["blind", "disability", "assistive", "mobility", "support"]
+  },
+  "link": {
+    "emoji": "🔗",
+    "keywords": ["connection", "chain", "url", "hyperlink", "attach"]
+  },
+  "chains": {
+    "emoji": "⛓",
+    "keywords": ["link", "metal", "bond", "locked", "heavy"]
+  },
+  "hook": {
+    "emoji": "🪝",
+    "keywords": ["catch", "fish", "hang", "metal", "tool"]
+  },
+  "toolbox": {
+    "emoji": "🧰",
+    "keywords": ["tools", "repair", "kit", "fix", "mechanic"]
+  },
+  "magnet": {
+    "emoji": "🧲",
+    "keywords": ["attract", "magnetism", "science", "physics", "pull"]
+  },
+  "ladder": {
+    "emoji": "🪜",
+    "keywords": ["climb", "height", "step", "tool", "reach"]
+  },
+  "alembic": {
+    "emoji": "⚗",
+    "keywords": ["science", "chemistry", "experiment", "lab", "distill"]
+  },
+  "test tube": {
+    "emoji": "🧪",
+    "keywords": ["science", "lab", "experiment", "liquid", "chemical"]
+  },
+  "petri dish": {
+    "emoji": "🧫",
+    "keywords": ["biology", "lab", "bacteria", "experiment", "science"]
+  },
+  "dna": {
+    "emoji": "🧬",
+    "keywords": ["genetics", "biology", "science", "molecule", "helix"]
+  },
+  "microscope": {
+    "emoji": "🔬",
+    "keywords": ["science", "research", "zoom", "lab", "biology"]
+  },
+  "telescope": {
+    "emoji": "🔭",
+    "keywords": ["space", "star", "astronomy", "science", "sky"]
+  },
+  "satellite antenna": {
+    "emoji": "📡",
+    "keywords": ["signal", "communication", "broadcast", "space", "tech"]
+  },
+  "syringe": {
+    "emoji": "💉",
+    "keywords": ["vaccine", "medicine", "injection", "health", "doctor"]
+  },
+  "droplet of blood": {
+    "emoji": "🩸",
+    "keywords": ["blood", "donation", "health", "medical", "drop"]
+  },
+  "pill": {
+    "emoji": "💊",
+    "keywords": ["medicine", "health", "drug", "capsule", "pharmacy"]
+  },
+  "adhesive bandage": {
+    "emoji": "🩹",
+    "keywords": ["bandage", "injury", "wound", "first aid", "health"]
+  },
+  "crutch": {
+    "emoji": "🩼",
+    "keywords": ["injury", "walk", "aid", "support", "disability"]
+  },
+  "stethoscope": {
+    "emoji": "🩺",
+    "keywords": ["doctor", "health", "checkup", "medical", "listen"]
+  },
+  "x-ray": {
+    "emoji": "🩻",
+    "keywords": ["bone", "scan", "medical", "hospital", "imaging"]
+  },
+  "door": {
+    "emoji": "🚪",
+    "keywords": ["entry", "exit", "house", "room", "open"]
+  },
+  "elevator": {
+    "emoji": "🛗",
+    "keywords": ["lift", "building", "up", "down", "floor"]
+  },
+  "mirror": {
+    "emoji": "🪞",
+    "keywords": ["reflection", "glass", "see", "grooming", "self"]
+  },
+  "window": {
+    "emoji": "🪟",
+    "keywords": ["house", "view", "glass", "open", "light"]
+  },
+  "bed": {
+    "emoji": "🛏",
+    "keywords": ["sleep", "rest", "bedroom", "nap", "furniture"]
+  },
+  "couch and lamp": {
+    "emoji": "🛋",
+    "keywords": ["living room", "sofa", "lamp", "relax", "furniture"]
+  },
+  "chair": {
+    "emoji": "🪑",
+    "keywords": ["sit", "furniture", "seat", "office", "dining"]
+  },
+  "toilet": {
+    "emoji": "🚽",
+    "keywords": ["bathroom", "restroom", "flush", "clean", "sanitary"]
+  },
+  "plunger": {
+    "emoji": "🪠",
+    "keywords": ["toilet", "clog", "tool", "bathroom", "plumbing"]
+  },
+  "shower": {
+    "emoji": "🚿",
+    "keywords": ["water", "bathroom", "shower", "wash", "hygiene"]
+  },
+  "bathtub": {
+    "emoji": "🛁",
+    "keywords": ["bath", "water", "clean", "soak", "relax"]
+  },
+  "mouse trap": {
+    "emoji": "🪤",
+    "keywords": ["trap", "pest", "catch", "rodent", "house"]
+  },
+  "razor": {
+    "emoji": "🪒",
+    "keywords": ["shave", "blade", "grooming", "hair", "beard"]
+  },
+  "lotion bottle": {
+    "emoji": "🧴",
+    "keywords": ["lotion", "skincare", "cream", "cosmetic", "moisturizer"]
+  },
+  "safety pin": {
+    "emoji": "🧷",
+    "keywords": ["pin", "fasten", "secure", "baby", "clothing"]
+  },
+  "broom": {
+    "emoji": "🧹",
+    "keywords": ["cleaning", "sweep", "dust", "floor", "household"]
+  },
+  "basket": {
+    "emoji": "🧺",
+    "keywords": ["storage", "laundry", "carry", "picnic", "container"]
+  },
+  "roll of paper": {
+    "emoji": "🧻",
+    "keywords": ["toilet paper", "tissue", "wipe", "bathroom", "hygiene"]
+  },
+  "bucket": {
+    "emoji": "🪣",
+    "keywords": ["water", "carry", "clean", "pail", "container"]
+  },
+  "soap": {
+    "emoji": "🧼",
+    "keywords": ["clean", "wash", "hygiene", "bubbles", "sanitary"]
+  },
+  "bubbles": {
+    "emoji": "🫧",
+    "keywords": ["soap", "clean", "fun", "wash", "pop"]
+  },
+  "toothbrush": {
+    "emoji": "🪥",
+    "keywords": ["dental", "brush", "teeth", "clean", "oral hygiene"]
+  },
+  "sponge": {
+    "emoji": "🧽",
+    "keywords": ["clean", "wash", "absorb", "scrub", "dish"]
+  },
+  "fire extinguisher": {
+    "emoji": "🧯",
+    "keywords": ["fire", "safety", "emergency", "extinguish", "protection"]
+  },
+  "shopping cart": {
+    "emoji": "🛒",
+    "keywords": ["shopping", "buy", "groceries", "store", "retail"]
+  },
+  "cigarette": {
+    "emoji": "🚬",
+    "keywords": ["smoke", "tobacco", "cigar", "nicotine", "unhealthy"]
+  },
+  "casket": {
+    "emoji": "⚰",
+    "keywords": ["funeral", "death", "coffin", "grave", "rest"]
+  },
+  "headstone": {
+    "emoji": "🪦",
+    "keywords": ["grave", "cemetery", "tomb", "memorial", "death"]
+  },
+  "funeral urn": {
+    "emoji": "⚱",
+    "keywords": ["ashes", "death", "cremation", "memorial", "funeral"]
+  },
+  "moai": {
+    "emoji": "🗿",
+    "keywords": ["statue", "easter island", "stone", "historic", "monument"]
+  },
+  "placard": {
+    "emoji": "🪧",
+    "keywords": ["protest", "sign", "board", "message", "demonstration"]
+  },
+  "id card": {
+    "emoji": "🪪",
+    "keywords": ["identification", "card", "personal", "identity", "badge"]
+  },
+  "place of worship": {
+    "emoji": "🛐",
+    "keywords": ["religion", "worship", "spiritual", "temple", "church"]
+  },
+  "atom symbol": {
+    "emoji": "⚛",
+    "keywords": ["science", "atom", "physics", "nucleus", "energy"]
+  },
+  "om": {
+    "emoji": "🕉",
+    "keywords": ["spiritual", "hinduism", "mantra", "chant", "meditation"]
+  },
+  "star of david": {
+    "emoji": "✡",
+    "keywords": ["judaism", "star", "religion", "jewish", "symbol"]
+  },
+  "wheel of dharma": {
+    "emoji": "☸",
+    "keywords": ["buddhism", "spiritual", "religion", "dharma", "symbol"]
+  },
+  "yin yang": {
+    "emoji": "☯",
+    "keywords": ["balance", "philosophy", "taoism", "harmony", "symbol"]
+  },
+  "latin cross": {
+    "emoji": "✝",
+    "keywords": ["christianity", "religion", "cross", "faith", "symbol"]
+  },
+  "orthodox cross": {
+    "emoji": "☦",
+    "keywords": ["christianity", "orthodox", "religion", "cross", "faith"]
+  },
+  "star and crescent moon": {
+    "emoji": "☪",
+    "keywords": ["islam", "religion", "star", "crescent", "symbol"]
+  },
+  "peace": {
+    "emoji": "☮",
+    "keywords": ["peace", "symbol", "antiwar", "calm", "harmony"]
+  },
+  "menorah": {
+    "emoji": "🕎",
+    "keywords": ["judaism", "candle", "festival", "hanukkah", "religion"]
+  },
+  "six-pointed star": {
+    "emoji": "🔯",
+    "keywords": ["star", "jewish", "symbol", "religion", "hexagram"]
+  },
+  "shuffle tracks": {
+    "emoji": "🔀",
+    "keywords": ["music", "shuffle", "random", "tracks", "audio"]
+  },
+  "repeat all": {
+    "emoji": "🔁",
+    "keywords": ["music", "repeat", "loop", "audio", "playlist"]
+  },
+  "repeat one": {
+    "emoji": "🔂",
+    "keywords": ["music", "repeat", "one", "loop", "audio"]
+  },
+  "red question mark": {
+    "emoji": "❓",
+    "keywords": ["question", "help", "query", "unknown", "red"]
+  },
+  "red exclamation mark": {
+    "emoji": "❗",
+    "keywords": ["exclamation", "important", "alert", "warning", "red"]
+  },
+  "currency exchange": {
+    "emoji": "💱",
+    "keywords": ["money", "currency", "exchange", "finance", "trade"]
+  },
+  "heavy green dollar sign": {
+    "emoji": "💲",
+    "keywords": ["money", "dollar", "currency", "finance", "green"]
+  }
+
+},
+  "default_emoji": "📝"
+} 

@@ -1,11 +1,13 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/planner_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class WidgetService {
   static const String _appWidgetId = 'home_widget';
   static const String _upNextKey = 'up_next_items';
   static const String _todayKey = 'today_items';
+  static const MethodChannel _channel = MethodChannel('widget_channel');
 
   /// Initialize the widget service
   static Future<void> initialize() async {
@@ -60,9 +62,22 @@ class WidgetService {
       
       print('WidgetService: Saved widget data to SharedPreferences');
 
+      // Trigger immediate widget update on Android
+      await _triggerWidgetUpdate();
+      
       print('Widget updated successfully with ${widgetItems.length} items');
     } catch (e) {
       print('Failed to update widget: $e');
+    }
+  }
+
+  /// Trigger immediate widget update on Android
+  static Future<void> _triggerWidgetUpdate() async {
+    try {
+      await _channel.invokeMethod('updateWidget');
+      print('WidgetService: Triggered immediate widget update');
+    } catch (e) {
+      print('WidgetService: Failed to trigger widget update: $e');
     }
   }
 
@@ -104,6 +119,17 @@ class WidgetService {
       print('WidgetService: Current widget data: $widgetData');
     } catch (e) {
       print('Failed to force update widget: $e');
+    }
+  }
+
+  /// Manual refresh widget - useful for testing
+  static Future<void> refreshWidget() async {
+    try {
+      print('WidgetService: Manual widget refresh requested');
+      await _triggerWidgetUpdate();
+      print('WidgetService: Manual refresh completed');
+    } catch (e) {
+      print('Failed to refresh widget: $e');
     }
   }
 

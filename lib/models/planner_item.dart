@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import '../theme/app_theme.dart';
+import '../services/emoji_service.dart';
 
 class PlannerItem {
   final String id; // Unique identifier for the item
@@ -22,6 +23,9 @@ class PlannerItem {
   int? stepsDone;
   List<String>? stepNames;
   List<bool>? stepChecked;
+  // Recurring task completion tracking
+  Set<String>? completionDates; // Format: "YYYY-MM-DD"
+  bool isImportant; // NEW: important task flag
 
   PlannerItem({
     String? id,
@@ -40,6 +44,8 @@ class PlannerItem {
     this.stepsDone,
     this.stepNames,
     this.stepChecked,
+    this.completionDates,
+    this.isImportant = false, // Default to false for backward compatibility
   }) : id = id ?? _generateId();
 
   // Generate a unique ID
@@ -65,6 +71,8 @@ class PlannerItem {
     'stepsDone': stepsDone,
     'stepNames': stepNames,
     'stepChecked': stepChecked,
+    'completionDates': completionDates?.toList(),
+    'isImportant': isImportant,
   };
 
   static PlannerItem fromJson(Map<String, dynamic> json) {
@@ -94,6 +102,8 @@ class PlannerItem {
       stepsDone: json['stepsDone'],
       stepNames: (json['stepNames'] as List?)?.map((e) => e.toString()).toList(),
       stepChecked: (json['stepChecked'] as List?)?.map((e) => e == true).toList(),
+      completionDates: (json['completionDates'] as List?)?.map((e) => e.toString()).toSet(),
+      isImportant: json['isImportant'] ?? false, // Default to false for backward compatibility
     );
   }
 }
@@ -817,6 +827,10 @@ class RecurrenceUtils {
 
   /// Creates a virtual task instance for a specific date
   static PlannerItem createVirtualInstance(PlannerItem originalItem, DateTime targetDate) {
+    // Check if this date is marked as completed in the original item
+    final dateKey = '${targetDate.year}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.day.toString().padLeft(2, '0')}';
+    final isCompleted = originalItem.completionDates?.contains(dateKey) ?? false;
+    
     return PlannerItem(
       id: '${originalItem.id}_virtual_${targetDate.millisecondsSinceEpoch}', // Unique ID for virtual instances
       name: originalItem.name,
@@ -824,7 +838,7 @@ class RecurrenceUtils {
       date: targetDate,
       startTime: originalItem.startTime,
       duration: originalItem.duration,
-      done: false, // Virtual instances are always unchecked
+      done: isCompleted, // Check completion status for this specific date
       type: originalItem.type,
       reminder: originalItem.reminder,
       reminderOffset: originalItem.reminderOffset,
@@ -834,84 +848,13 @@ class RecurrenceUtils {
       stepsDone: originalItem.stepsDone,
       stepNames: originalItem.stepNames,
       stepChecked: originalItem.stepChecked,
+      isImportant: originalItem.isImportant, // Inherit important status from original item
     );
   }
 }
 
 String getEmojiForName(String name) {
-  if (name.trim().isEmpty) return '📝'; // Default for empty input
-  
-  final lower = name.toLowerCase();
-  
-  // Meeting & Events
-  if (lower.contains('meeting') || lower.contains('appointment') || lower.contains('conference')) return '📅';
-  if (lower.contains('birthday') || lower.contains('party') || lower.contains('celebration')) return '🎂';
-  if (lower.contains('wedding') || lower.contains('anniversary')) return '💒';
-  if (lower.contains('dinner') || lower.contains('lunch') || lower.contains('breakfast')) return '🍽️';
-  
-  // Health & Fitness
-  if (lower.contains('workout') || lower.contains('gym') || lower.contains('exercise') || lower.contains('fitness')) return '💪';
-  if (lower.contains('run') || lower.contains('jog') || lower.contains('marathon')) return '🏃';
-  if (lower.contains('walk') || lower.contains('hike')) return '🚶';
-  if (lower.contains('yoga') || lower.contains('meditate') || lower.contains('meditation')) return '🧘';
-  if (lower.contains('doctor') || lower.contains('medical') || lower.contains('appointment')) return '🩺';
-  if (lower.contains('dentist') || lower.contains('dental')) return '🦷';
-  if (lower.contains('pharmacy') || lower.contains('medicine')) return '💊';
-  
-  // Shopping & Errands
-  if (lower.contains('shop') || lower.contains('buy') || lower.contains('purchase')) return '🛒';
-  if (lower.contains('grocery') || lower.contains('food') || lower.contains('market')) return '🛒';
-  if (lower.contains('clothes') || lower.contains('fashion') || lower.contains('outfit')) return '👕';
-  
-  // Travel & Transportation
-  if (lower.contains('flight') || lower.contains('travel') || lower.contains('trip') || lower.contains('vacation')) return '✈️';
-  if (lower.contains('car') || lower.contains('drive') || lower.contains('road')) return '🚗';
-  if (lower.contains('train') || lower.contains('subway') || lower.contains('metro')) return '🚆';
-  if (lower.contains('bus') || lower.contains('transport')) return '🚌';
-  
-  // Work & Business
-  if (lower.contains('work') || lower.contains('office') || lower.contains('job')) return '💼';
-  if (lower.contains('email') || lower.contains('mail')) return '✉️';
-  if (lower.contains('call') || lower.contains('phone') || lower.contains('dial')) return '📞';
-  if (lower.contains('presentation') || lower.contains('pitch') || lower.contains('demo')) return '📊';
-  if (lower.contains('interview') || lower.contains('resume') || lower.contains('cv')) return '📋';
-  
-  // Education & Learning
-  if (lower.contains('study') || lower.contains('learn') || lower.contains('course')) return '📖';
-  if (lower.contains('read') || lower.contains('book') || lower.contains('library')) return '📚';
-  if (lower.contains('write') || lower.contains('blog') || lower.contains('article')) return '✍️';
-  if (lower.contains('homework') || lower.contains('assignment') || lower.contains('project')) return '📝';
-  if (lower.contains('exam') || lower.contains('test') || lower.contains('quiz')) return '📝';
-  
-  // Home & Personal
-  if (lower.contains('clean') || lower.contains('laundry') || lower.contains('wash')) return '🧹';
-  if (lower.contains('cook') || lower.contains('bake') || lower.contains('kitchen')) return '🍳';
-  if (lower.contains('water') || lower.contains('plant') || lower.contains('garden')) return '💧';
-  if (lower.contains('pet') || lower.contains('dog') || lower.contains('cat')) return '🐕';
-  if (lower.contains('baby') || lower.contains('child') || lower.contains('kid')) return '👶';
-  
-  // Entertainment & Leisure
-  if (lower.contains('movie') || lower.contains('film') || lower.contains('cinema')) return '🎬';
-  if (lower.contains('music') || lower.contains('concert') || lower.contains('gig')) return '🎵';
-  if (lower.contains('game') || lower.contains('play') || lower.contains('gaming')) return '🎮';
-  if (lower.contains('sport') || lower.contains('football') || lower.contains('basketball')) return '⚽';
-  if (lower.contains('swim') || lower.contains('pool')) return '🏊';
-  
-  // Financial & Banking
-  if (lower.contains('bank') || lower.contains('money') || lower.contains('finance')) return '💰';
-  if (lower.contains('pay') || lower.contains('bill') || lower.contains('rent')) return '💳';
-  
-  // Technology & Digital
-  if (lower.contains('computer') || lower.contains('laptop') || lower.contains('tech')) return '💻';
-  if (lower.contains('phone') || lower.contains('mobile') || lower.contains('app')) return '📱';
-  if (lower.contains('internet') || lower.contains('wifi') || lower.contains('online')) return '🌐';
-  
-  // Default categories
-  if (lower.contains('task') || lower.contains('todo')) return '📝';
-  if (lower.contains('routine') || lower.contains('habit')) return '🔁';
-  if (lower.contains('event') || lower.contains('activity')) return '📆';
-  
-  return '📝'; // Default for unmatched
+  return EmojiService.getEmojiForName(name);
 }
 
 Future<int?> showCustomDurationDialog(BuildContext context, {Color? themeColor}) async {

@@ -150,15 +150,15 @@ class ThemeProvider extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
 
   // Base color selection
-  MaterialColor _selectedThemeColor = Colors.pink;
+  MaterialColor _selectedThemeColor = Colors.teal;
   MaterialColor get selectedThemeColor => _selectedThemeColor;
 
   // Available base colors
   static const List<MaterialColor> baseColors = [
     Colors.pink,
     Colors.teal,
-    CustomMaterialColor.slate,
     CustomMaterialColor.burgundy,
+    CustomMaterialColor.slate,
   ];
 
   ThemeProvider() {
@@ -168,7 +168,7 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> _loadThemeSettings() async {
     final prefs = await SharedPreferences.getInstance();
     final isDarkMode = prefs.getBool('is_dark_mode') ?? false;
-    final savedColorIndex = prefs.getInt('selected_color_index') ?? 0;
+    final savedColorIndex = prefs.getInt('selected_color_index') ?? 1;
     
     _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light;
     if (savedColorIndex < baseColors.length) {

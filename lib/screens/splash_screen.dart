@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_theme.dart' show CustomMaterialColor;
 
 class SplashScreen extends StatefulWidget {
   final VoidCallback onSplashComplete;
@@ -76,6 +78,24 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
+  String _getLogoForTheme(ThemeProvider themeProvider) {
+    // Get the current theme color and map it to the appropriate logo
+    final currentColor = themeProvider.selectedThemeColor;
+    
+    if (currentColor == Colors.teal) {
+      return 'assets/images/daily_quest_logo_teal.png';
+    } else if (currentColor == Colors.pink) {
+      return 'assets/images/daily_quest_logo_pink.png';
+    } else if (currentColor == CustomMaterialColor.burgundy) {
+      return 'assets/images/daily_quest_logo_burgundy.png';
+    } else if (currentColor == CustomMaterialColor.slate) {
+      return 'assets/images/daily_quest_logo_slate.png';
+    } else {
+      // Default fallback
+      return 'assets/images/daily_quest_logo_teal.png';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
@@ -93,47 +113,22 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Logo container with gradient background
-                        Container(
+                        // Logo
+                        Image.asset(
+                          _getLogoForTheme(themeProvider),
                           width: 120,
                           height: 120,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                themeProvider.shade100,
-                                themeProvider.shade200.withOpacity(0.3),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(30),
-                            boxShadow: [
-                              BoxShadow(
-                                color: themeProvider.shadowColor,
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(30),
-                            child: Image.asset(
-                              'assets/images/daily_quest_logo.png',
-                              fit: BoxFit.contain,
-                              color: themeProvider.shade400,
-                            ),
-                          ),
+                          fit: BoxFit.contain,
                         ),
                         const SizedBox(height: 32),
                         
                         // App title
                         Text(
                           'Daily Quest',
-                          style: TextStyle(
+                          style: GoogleFonts.dancingScript(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
                             color: themeProvider.shade400,
-                            fontFamily: 'Dancing Script',
                             shadows: [
                               Shadow(
                                 color: themeProvider.shadowColor,

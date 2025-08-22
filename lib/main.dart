@@ -7,12 +7,14 @@ import 'screens/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'services/widget_service.dart';
 import 'services/notification_service.dart';
+import 'services/emoji_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize services
   await WidgetService.initialize();
+  await EmojiService.initialize();
   
   // Initialize notification service non-blocking (in background) with timeout
   NotificationService().initialize().timeout(
