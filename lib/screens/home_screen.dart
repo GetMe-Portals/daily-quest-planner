@@ -10,9 +10,9 @@ import '../widgets/custom_calendar_card.dart';
 import '../models/planner_item.dart';
 import '../widgets/sun_checkbox.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+
 import 'dart:async';
-import 'package:permission_handler/permission_handler.dart';
+
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -48,11 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   GlobalKey<AnimatedListState> _incompleteListKey = GlobalKey<AnimatedListState>();
   GlobalKey<AnimatedListState> _completedListKey = GlobalKey<AnimatedListState>();
   String? _flashKey;
-  late stt.SpeechToText _speech;
-  bool _isListening = false;
-  String _voiceCommand = '';
-  bool _showMicFab = false;
-  double _soundLevel = 0.0;
+
   Map<String, String> _moodsByDate = {};
   Map<String, DateTime> _completionTimestamps = {}; // Track when each date was completed
   Set<String> _confettiShownDates = {}; // Track dates where confetti has been shown
@@ -88,7 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadPlannerItems();
-    _speech = stt.SpeechToText();
     _loadMoods();
     _loadCompletionTimestamps();
     _loadConfettiFlags();
@@ -262,55 +257,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<bool> _checkMicPermission() async {
-    var status = await Permission.microphone.status;
-    if (!status.isGranted) {
-      status = await Permission.microphone.request();
-    }
-    return status.isGranted;
-  }
 
-  void _handleVoiceCommand(String command) {
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    final lower = command.toLowerCase().trim();
-    // Accept both "add task" and "ad task" (common misrecognition)
-    final addTaskPattern = RegExp(r'^(add|ad) task (.+) 0?$', caseSensitive: false);
-    final match = addTaskPattern.firstMatch(lower);
-    if (match != null) {
-      final name = match.group(2)!.trim();
-      if (name.isNotEmpty) {
-        final newTask = PlannerItem(
-          name: name,
-          emoji: '📝',
-          date: DateTime.now(),
-          done: false,
-          type: 'task',
-        );
-        setState(() {
-          _plannerItems.add(newTask);
-        });
-        PlannerStorage.save(_plannerItems);
-        
-        // Note: Voice-created tasks don't have reminders by default
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Task "$name" added!'),
-            backgroundColor: themeProvider.successColor,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        return;
-      }
-    }
-    // If no command recognized
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('No valid command recognized.'),
-        backgroundColor: themeProvider.errorColor,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+
+
 
   Future<void> _loadMoods() async {
     final prefs = await SharedPreferences.getInstance();
@@ -825,14 +774,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           bottomNavigationBar: _buildBottomNavigationBar(themeProvider),
-          bottomSheet: _voiceCommand.isNotEmpty && !_isListening
-              ? Container(
-                  color: themeProvider.cardColor,
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  child: Text('Heard: "$_voiceCommand"', style: TextStyle(fontSize: 16, color: themeProvider.textColor)),
-                )
-              : null,
+
         );
       },
         );
@@ -4705,93 +4647,7 @@ class _AnimatedFlashRowState extends State<_AnimatedFlashRow> {
   }
 } 
 
-class _SoundWaveBar extends StatelessWidget {
-  final double level;
-  const _SoundWaveBar({Key? key, required this.level}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
-    final barHeight = 40.0;
-    final barWidth = 180.0;
-    final waveHeight = (level * 2.5).clamp(6.0, barHeight - 8.0);
-    final isSilent = level < 2.0;
-    return Container(
-      width: barWidth,
-      height: barHeight,
-      decoration: BoxDecoration(
-        color: themeProvider.shade100,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: themeProvider.shade200.withOpacity(0.18),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 18),
-      child: isSilent
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.mic, color: themeProvider.shade400, size: 24),
-                const SizedBox(width: 10),
-                Text(
-                  'Listening...',
-                  style: TextStyle(
-                    color: themeProvider.shade400,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    letterSpacing: 1.1,
-                  ),
-                ),
-              ],
-            )
-          : CustomPaint(
-              size: Size(barWidth - 36, barHeight),
-              painter: _WavePainter(waveHeight: waveHeight, color: themeProvider.shade400),
-            ),
-        );
-      },
-    );
-  }
-}
-
-class _WavePainter extends CustomPainter {
-  final double waveHeight;
-  final Color color;
-  _WavePainter({required this.waveHeight, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-    final path = Path();
-    final midY = size.height / 2;
-    final amplitude = waveHeight / 2;
-    final waveLength = size.width / 1.5;
-    for (double x = 0; x <= size.width; x += 1) {
-      final y = midY + amplitude *
-          sin(2 * pi * x / waveLength + DateTime.now().millisecond / 250.0);
-      if (x == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
-    }
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _WavePainter oldDelegate) {
-    return oldDelegate.waveHeight != waveHeight;
-  }
-} 
+ 
 
   String _getLogoForTheme(ThemeProvider themeProvider) {
     // Get the current theme color and mode to map it to the appropriate logo
