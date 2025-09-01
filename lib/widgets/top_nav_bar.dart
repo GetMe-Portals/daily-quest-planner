@@ -126,11 +126,6 @@ class SettingsPanel extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: Icon(Icons.account_circle, size: 32, color: themeProvider.infoColor),
-                  onPressed: () {},
-                  tooltip: 'Profile',
-                ),
-                IconButton(
                   icon: Icon(
                     themeProvider.themeMode == ThemeMode.dark 
                       ? Icons.light_mode 
@@ -161,7 +156,6 @@ class SettingsPanel extends StatelessWidget {
                   },
                   tooltip: 'Color Palette',
                 ),
-
               ],
             ),
           ),

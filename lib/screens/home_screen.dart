@@ -61,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late TextEditingController _noteController; // Persistent controller for note text field
   bool _showImportantOnly = false; // NEW: filter for important tasks only
   DateTime? _expandedDate; // Track which date should be expanded in weekly view
+  bool _isFirstWeeklyEntry = true; // Track if this is the first time entering weekly view
   
   // Separate expansion states for each day box
   bool _isMondayExpanded = false;
@@ -610,26 +611,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                     onDateSelected: (date) {
                                       setState(() {
                                         _selectedDate = date;
-                                        // Preserve current view if already on weekly quest or mood tracker
+                                        // Preserve current view if already on weekly quest, monthly quest, or mood tracker
                                         if (_selectedTimeRange == 'weekly') {
                                           // Stay in weekly quest view, just update the focused day
                                           _focusedDay = date;
                                           // Set the selected date as expanded
                                           _expandedDate = date;
+                                        } else if (_selectedTimeRange == 'monthly') {
+                                          // Stay in monthly quest view, just update the selected date
+                                          _selectedDate = date;
+                                        } else if (_selectedTimeRange == 'yearly') {
+                                          // Stay in yearly quest view, just update the selected date
+                                          _selectedDate = date;
                                         } else if (_selectedTimeRange == 'dashboard') {
                                           // Stay in mood tracker view, just update the selected date
                                           _selectedDate = date;
                                           _focusedDay = date;
                                         } else {
                                           // Set time range based on selected date for other views
-                                          final today = DateTime.now();
-                                          final isToday = date.year == today.year && 
-                                                         date.month == today.month && 
-                                                         date.day == today.day;
-                                          if (isToday) {
-                                            _selectedTimeRange = 'today';
-                                          } else {
-                                            _selectedTimeRange = 'custom';
+                                        final today = DateTime.now();
+                                        final isToday = date.year == today.year && 
+                                                       date.month == today.month && 
+                                                       date.day == today.day;
+                                        if (isToday) {
+                                          _selectedTimeRange = 'today';
+                                        } else {
+                                          _selectedTimeRange = 'custom';
                                           }
                                         }
                                       });
@@ -959,6 +966,62 @@ class _HomeScreenState extends State<HomeScreen> {
     return items;
   }
 
+  /// Get items for a specific month range, regardless of the selected time range
+  List<PlannerItem> _getItemsForMonth(DateTime monthStart, DateTime monthEnd) {
+    final items = <PlannerItem>[];
+    final processedItems = <String, Set<String>>{}; // itemId -> set of processed dates
+    
+    // Process all items to handle both regular and recurring items
+    for (final item in _plannerItems) {
+      // Check each day in the month range
+      DateTime currentDate = monthStart;
+      while (currentDate.isBefore(monthEnd.add(const Duration(days: 1)))) {
+        final currentDateKey = '${currentDate.year}-${currentDate.month}-${currentDate.day}';
+        
+        // Initialize the set for this item if not exists
+        processedItems.putIfAbsent(item.id, () => <String>{});
+        
+        // Check if we've already processed this item for this date
+        if (!processedItems[item.id]!.contains(currentDateKey)) {
+          bool shouldAdd = false;
+          
+          // Check if this is a regular item for this exact date
+          final itemDate = DateTime(item.date.year, item.date.month, item.date.day);
+          final targetDate = DateTime(currentDate.year, currentDate.month, currentDate.day);
+          
+          if (itemDate.isAtSameMomentAs(targetDate)) {
+            // This is a regular item for this exact date
+            items.add(item);
+            shouldAdd = true;
+          } else if (item.recurrence != null && 
+                     (item.recurrence!.patterns.isNotEmpty || 
+                      (item.recurrence!.customRules != null && item.recurrence!.customRules!.isNotEmpty)) &&
+                     RecurrenceUtils.shouldAppearOnDate(item, currentDate)) {
+            // This is a recurring item that should appear on this date
+            final virtualItem = RecurrenceUtils.createVirtualInstance(item, currentDate);
+            items.add(virtualItem);
+            shouldAdd = true;
+          }
+          
+          if (shouldAdd) {
+            // Mark this item as processed for this date
+            processedItems[item.id]!.add(currentDateKey);
+          }
+        }
+        
+        currentDate = currentDate.add(const Duration(days: 1));
+      }
+    }
+    
+    // Filter by important if toggle is enabled
+    if (_showImportantOnly) {
+      final filteredItems = items.where((item) => item.isImportant).toList();
+      return filteredItems;
+    }
+    
+    return items;
+  }
+
   List<PlannerItem> _getItemsForDate(DateTime date) {
     final items = <PlannerItem>[];
     final processedIds = <String>{};
@@ -1231,12 +1294,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMonthlyView(DateTime baseDate, ThemeProvider themeProvider) {
-    // Get items for the month
-    final monthItems = _getItemsForTimeRange(baseDate);
+    // Check if a specific date is selected in monthly view
+    final isDateSelected = _selectedDate.year == baseDate.year && 
+                          _selectedDate.month == baseDate.month && 
+                          _selectedDate.day != baseDate.day;
     
-    // Calculate month statistics
-    final totalItems = monthItems.length;
-    final completedItems = monthItems.where((item) => item.done).length;
+    // Get items for the selected date or the entire month
+    final items = isDateSelected ? _getItemsForDate(_selectedDate) : _getItemsForTimeRange(baseDate);
+    
+    // Calculate statistics
+    final totalItems = items.length;
+    final completedItems = items.where((item) => item.done).length;
     final pendingItems = totalItems - completedItems;
     final progress = totalItems > 0 ? completedItems / totalItems : 0.0;
     
@@ -1319,6 +1387,152 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+        ),
+        // Show selected date's tasks if a date is selected
+        if (isDateSelected) ...[
+          const SizedBox(height: 16),
+          _buildSelectedDateTasks(themeProvider),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSelectedDateTasks(ThemeProvider themeProvider) {
+    final items = _getItemsForDate(_selectedDate);
+    
+    // Filter by important if toggle is enabled
+    final filteredItems = _showImportantOnly 
+        ? items.where((item) => item.isImportant).toList()
+        : items;
+    
+    // Separate into unchecked and checked
+    final unchecked = <PlannerItem>[];
+    final checked = <PlannerItem>[];
+    for (final item in filteredItems) {
+      if (item.done) {
+        checked.add(item);
+      } else {
+        unchecked.add(item);
+      }
+    }
+    
+    // Sort by time
+    unchecked.sort((a, b) {
+      final aMinutes = (a.startTime?.hour ?? 0) * 60 + (a.startTime?.minute ?? 0);
+      final bMinutes = (b.startTime?.hour ?? 0) * 60 + (b.startTime?.minute ?? 0);
+      return aMinutes.compareTo(bMinutes);
+    });
+    checked.sort((a, b) {
+      final aMinutes = (a.startTime?.hour ?? 0) * 60 + (a.startTime?.minute ?? 0);
+      final bMinutes = (b.startTime?.hour ?? 0) * 60 + (b.startTime?.minute ?? 0);
+      return aMinutes.compareTo(bMinutes);
+    });
+    
+    if (filteredItems.isEmpty) {
+      return EmptyStateWidget(timeRange: 'today', selectedDate: _selectedDate);
+    }
+    
+    final hasSeparator = unchecked.isNotEmpty && checked.isNotEmpty;
+    
+    return Column(
+      children: [
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: unchecked.length,
+          itemBuilder: (context, index) {
+            final item = unchecked[index];
+            final itemKey = item.hashCode.toString() + item.name;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Dismissible(
+                key: ValueKey(itemKey),
+                direction: DismissDirection.horizontal,
+                background: Container(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  color: themeProvider.errorColor,
+                  child: Icon(Icons.delete, color: themeProvider.cardColor, size: 28),
+                ),
+                secondaryBackground: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  color: themeProvider.errorColor,
+                  child: Icon(Icons.delete, color: themeProvider.cardColor, size: 28),
+                ),
+                confirmDismiss: null,
+                onDismissed: (direction) async {
+                  await _handleDeleteItem(item);
+                },
+                child: GestureDetector(
+                  onTap: () async {
+                    await _handleEditItem(item);
+                  },
+                  child: _buildPlannerItemRow(
+                    item,
+                    () => _onToggleItem(item, true, index, false, themeProvider),
+                    themeProvider,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        if (hasSeparator)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              children: [
+                Expanded(child: Divider(thickness: 1, color: themeProvider.dividerColor)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Text('Completed', style: TextStyle(color: themeProvider.textColorSecondary, fontSize: 12, fontWeight: FontWeight.w500)),
+                ),
+                Expanded(child: Divider(thickness: 1, color: themeProvider.dividerColor)),
+              ],
+            ),
+          ),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: checked.length,
+          itemBuilder: (context, index) {
+            final item = checked[index];
+            final itemKey = item.hashCode.toString() + item.name;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Dismissible(
+                key: ValueKey(itemKey),
+                direction: DismissDirection.horizontal,
+                background: Container(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  color: themeProvider.errorColor,
+                  child: Icon(Icons.delete, color: themeProvider.cardColor, size: 28),
+                ),
+                secondaryBackground: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  color: themeProvider.errorColor,
+                  child: Icon(Icons.delete, color: themeProvider.cardColor, size: 28),
+                ),
+                confirmDismiss: null,
+                onDismissed: (direction) async {
+                  await _handleDeleteItem(item);
+                },
+                child: GestureDetector(
+                  onTap: () async {
+                    await _handleEditItem(item);
+                  },
+                  child: _buildPlannerItemRow(
+                    item,
+                    () => _onToggleItem(item, true, index, true, themeProvider),
+                    themeProvider,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -1781,11 +1995,13 @@ class _HomeScreenState extends State<HomeScreen> {
               
               final currentDate = DateTime(baseDate.year, baseDate.month, dayOfMonth);
               final isToday = currentDate.isAtSameMomentAs(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
+              final isSelectedDate = currentDate.isAtSameMomentAs(_selectedDate);
               final dayItems = _getItemsForDate(currentDate);
               
               return Expanded(
                 child: GestureDetector(
-                  onTap: () {
+                                    onTap: () {
+                    // Navigate to today view immediately
                     setState(() {
                       _selectedDate = currentDate;
                       _selectedTimeRange = 'today';
@@ -1795,11 +2011,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 120,
                     margin: const EdgeInsets.all(1),
                     decoration: BoxDecoration(
-                      color: isToday ? themeProvider.shade400.withOpacity(0.1) : Colors.transparent,
+                      color: isSelectedDate ? themeProvider.shade400.withOpacity(0.2) : 
+                             isToday ? themeProvider.shade400.withOpacity(0.1) : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isToday ? themeProvider.shade400.withOpacity(0.3) : themeProvider.dividerColor.withOpacity(0.3),
-                        width: isToday ? 2 : 1,
+                        color: isSelectedDate ? themeProvider.shade400 : 
+                               isToday ? themeProvider.shade400.withOpacity(0.3) : themeProvider.dividerColor.withOpacity(0.3),
+                        width: isSelectedDate ? 2 : isToday ? 2 : 1,
                       ),
                     ),
                     child: Padding(
@@ -1812,8 +2030,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             '$dayOfMonth',
                             style: TextStyle(
                               fontSize: 11,
-                              fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                              color: isToday ? themeProvider.shade700 : themeProvider.textColor,
+                              fontWeight: isSelectedDate ? FontWeight.bold : isToday ? FontWeight.bold : FontWeight.normal,
+                              color: isSelectedDate ? themeProvider.shade700 : isToday ? themeProvider.shade700 : themeProvider.textColor,
                             ),
                           ),
                           const SizedBox(height: 1),
@@ -1963,7 +2181,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return aMinutes.compareTo(bMinutes);
     });
     if (items.isEmpty) {
-      return EmptyStateWidget(timeRange: _selectedTimeRange);
+      return EmptyStateWidget(timeRange: _selectedTimeRange, selectedDate: date);
     }
     final hasSeparator = unchecked.isNotEmpty && checked.isNotEmpty;
     return Column(
@@ -2149,6 +2367,24 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           // Always stay in Weekly view when Weekly Quest button is clicked
             _selectedTimeRange = 'weekly';
+          
+          // Auto-expand today's date on first entry to weekly view
+          if (_isFirstWeeklyEntry) {
+            final today = DateTime.now();
+            _expandedDate = today;
+            
+            // Navigate to the week that contains today if not already there
+            final currentWeekStart = _getStartOfWeek(_focusedDay);
+            final todayWeekStart = _getStartOfWeek(today);
+            
+            if (!_isDateInRange(today, currentWeekStart, _getEndOfWeek(_focusedDay))) {
+              _focusedDay = today;
+              _selectedDate = today;
+            }
+            
+            _isFirstWeeklyEntry = false;
+          }
+          
           // Regenerate AnimatedList keys to reset lists and prevent RangeError
           _incompleteListKey = GlobalKey<AnimatedListState>();
           _completedListKey = GlobalKey<AnimatedListState>();
@@ -2213,6 +2449,24 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () {
         setState(() {
           _selectedTimeRange = value;
+          
+          // Auto-expand today's date on first entry to weekly view
+          if (value == 'weekly' && _isFirstWeeklyEntry) {
+            final today = DateTime.now();
+            _expandedDate = today;
+            
+            // Navigate to the week that contains today if not already there
+            final currentWeekStart = _getStartOfWeek(_focusedDay);
+            final todayWeekStart = _getStartOfWeek(today);
+            
+            if (!_isDateInRange(today, currentWeekStart, _getEndOfWeek(_focusedDay))) {
+              _focusedDay = today;
+              _selectedDate = today;
+            }
+            
+            _isFirstWeeklyEntry = false;
+          }
+          
           _showViewMenu = true; // Keep menu open when switching views
           // Regenerate AnimatedList keys to reset lists and prevent RangeError
           _incompleteListKey = GlobalKey<AnimatedListState>();
@@ -2707,19 +2961,23 @@ class _HomeScreenState extends State<HomeScreen> {
     // Get items for this specific month
     final monthStart = DateTime(baseDate.year, monthNumber, 1);
     final monthEnd = DateTime(baseDate.year, monthNumber + 1, 0);
-    final monthItems = _getItemsForTimeRange(monthStart);
+    final monthItems = _getItemsForMonth(monthStart, monthEnd);
     
     // Calculate month statistics
     final totalItems = monthItems.length;
     final completedItems = monthItems.where((item) => item.done).length;
+    final pendingItems = totalItems - completedItems;
     
     // Check if this is the current month
     final now = DateTime.now();
     final isCurrentMonth = baseDate.year == now.year && monthNumber == now.month;
     
+    // Check if this is the selected month
+    final isSelectedMonth = _selectedDate.year == baseDate.year && _selectedDate.month == monthNumber;
+    
     return Container(
       decoration: BoxDecoration(
-        color: themeProvider.cardColor,
+        color: isSelectedMonth ? themeProvider.shade400.withOpacity(0.1) : themeProvider.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -2730,7 +2988,10 @@ class _HomeScreenState extends State<HomeScreen> {
             offset: const Offset(0, 2),
           ),
         ],
-        border: isCurrentMonth ? Border.all(
+        border: isSelectedMonth ? Border.all(
+          color: themeProvider.shade400,
+          width: 2,
+        ) : isCurrentMonth ? Border.all(
           color: themeProvider.shade400.withOpacity(0.3),
           width: 1,
         ) : null,
@@ -2740,14 +3001,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            // Future: Navigate to month view or show month details
-            // For now, just show a snackbar
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('$monthName ${baseDate.year}'),
-                duration: const Duration(seconds: 1),
-              ),
-            );
+            // Navigate to monthly view immediately
+            setState(() {
+              _selectedDate = DateTime(baseDate.year, monthNumber, 1);
+              _selectedTimeRange = 'monthly';
+            });
           },
           child: Padding(
             padding: const EdgeInsets.all(6), // Further reduced padding
@@ -2757,21 +3015,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   monthName.substring(0, 3), // First 3 letters (Jan, Feb, etc.)
                   style: TextStyle(
-                    color: themeProvider.textColor,
+                    color: isSelectedMonth ? themeProvider.shade700 : themeProvider.textColor,
                     fontSize: 11, // Minimized font size
-                    fontWeight: FontWeight.bold,
+                    fontWeight: isSelectedMonth ? FontWeight.bold : FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 1), // Minimal spacing
+                const SizedBox(height: 2), // Minimal spacing
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
                 Text(
                   totalItems.toString(),
                   style: TextStyle(
                     color: themeProvider.shade400,
-                    fontSize: 12, // Minimized font size
+                        fontSize: 10, // Minimized font size
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 1), // Minimal spacing
                 Text(
                   completedItems.toString(),
                   style: TextStyle(
@@ -2779,6 +3039,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontSize: 10, // Minimized font size
                     fontWeight: FontWeight.w500,
                   ),
+                    ),
+                    Text(
+                      pendingItems.toString(),
+                      style: TextStyle(
+                        color: themeProvider.warningColor,
+                        fontSize: 10, // Minimized font size
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -3661,8 +3931,8 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                       ),
                     ),
                     child: Text(
-                      _selectedEmoji ?? EmojiService.getEmojiForName(_nameController.text), 
-                      style: const TextStyle(fontSize: 24)
+                  _selectedEmoji ?? EmojiService.getEmojiForName(_nameController.text), 
+                  style: const TextStyle(fontSize: 24)
                     ),
                   ),
                 ),
@@ -4663,9 +4933,9 @@ class _AnimatedFlashRowState extends State<_AnimatedFlashRow> {
       return 'assets/images/daily quest planner_burgundy_${modeSuffix}logo.png';
     } else if (currentColor == CustomMaterialColor.slate) {
       return 'assets/images/daily quest planner_slate_${modeSuffix}logo.png';
-    } else {
+      } else {
       // Default fallback
       return 'assets/images/daily quest planner_teal_${modeSuffix}logo.png';
     }
-  } 
+} 
 

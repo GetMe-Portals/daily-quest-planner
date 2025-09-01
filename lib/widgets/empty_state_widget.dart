@@ -5,10 +5,12 @@ import '../theme/app_theme.dart';
 
 class EmptyStateWidget extends StatelessWidget {
   final String timeRange;
+  final DateTime? selectedDate;
 
   const EmptyStateWidget({
     super.key,
     required this.timeRange,
+    this.selectedDate,
   });
 
   @override
@@ -67,7 +69,24 @@ class EmptyStateWidget extends StatelessWidget {
       case 'yearly':
         return 'No items for this year';
       default:
-        return 'No items for today';
+        // Check if this is today or a selected date
+        if (selectedDate != null) {
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final selectedDay = DateTime(selectedDate!.year, selectedDate!.month, selectedDate!.day);
+          
+          if (selectedDay.isAtSameMomentAs(today)) {
+            return 'No Plans for Today';
+          } else {
+            // Format the date as MMM dd (e.g., "Aug 31")
+            final monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            final monthName = monthNames[selectedDate!.month - 1];
+            final day = selectedDate!.day.toString().padLeft(2, '0');
+            return 'No Plans for $monthName $day';
+          }
+        }
+        return 'No Plans for Today';
     }
   }
 
