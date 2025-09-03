@@ -30,7 +30,7 @@ android {
         applicationId = "com.example.daily_quest_planner"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23  // Updated to meet awesome_notifications requirements
+        minSdk = flutter.minSdkVersion  // Updated to meet awesome_notifications requirements
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
