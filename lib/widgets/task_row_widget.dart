@@ -85,13 +85,11 @@ class TaskRowWidget extends StatelessWidget {
                       Expanded(
                         child: Text(
                           _capitalizeWords(item.name),
-                          style: GoogleFonts.dancingScript(
-                            textStyle: TextStyle(
-                              fontWeight: item.isImportant ? FontWeight.w900 : FontWeight.bold,
-                              fontSize: 18,
-                              decoration: item.done ? TextDecoration.lineThrough : null,
-                              color: item.done ? themeProvider.textColorSecondary : themeProvider.textColor,
-                            ),
+                          style: TextStyle(
+                            fontWeight: item.isImportant ? FontWeight.w900 : FontWeight.bold,
+                            fontSize: 14,
+                            decoration: item.done ? TextDecoration.lineThrough : null,
+                            color: item.done ? themeProvider.textColorSecondary : themeProvider.textColor,
                           ),
                         ),
                       ),
@@ -226,14 +224,15 @@ class TaskRowWidget extends StatelessWidget {
     }
   }
 
-  // Helper method to capitalize first letter of each word
+  // Helper method to capitalize only the first letter of the entire task name
   String _capitalizeWords(String text) {
     if (text.isEmpty) return text;
     
-    return text.split(' ').map((word) {
-      if (word.isEmpty) return word;
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
+    // If first letter is already capital, return as is
+    if (text[0] == text[0].toUpperCase()) return text;
+    
+    // Only capitalize the first letter, keep the rest exactly as typed
+    return text[0].toUpperCase() + text.substring(1);
   }
 }
 

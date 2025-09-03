@@ -1112,66 +1112,130 @@ class _HomeScreenState extends State<HomeScreen> {
           initialDate: targetItem.date,
           initialItem: targetItem,
           existingItems: _plannerItems, // Pass existing items for duplicate validation
+          onDelete: (item) => _handleDeleteItem(item), // Pass delete handler
         ),
       ),
       barrierDismissible: true,
     );
     
     if (updatedItem != null && mounted) {
-      // Find the item by ID instead of by reference
-      final idx = _plannerItems.indexWhere((existingItem) => existingItem.id == targetItem.id);
-      if (idx != -1) {
+      // Check if this is a deletion request
+      if (updatedItem.type == 'deleted') {
         try {
-          // Update the items list first
-          final updatedItems = List<PlannerItem>.from(_plannerItems);
-          updatedItems[idx] = updatedItem;
+          // Remove the item from the list
+          final updatedItems = _plannerItems.where((item) => item.id != targetItem.id).toList();
           
           // Save to storage with updated items
           await PlannerStorage.save(updatedItems);
           
-          // Defer UI update to next frame to avoid conflicts
+          // Update UI
           if (mounted) {
-            Future.microtask(() {
-              if (mounted) {
-                setState(() {
-                  _plannerItems = updatedItems;
-                  
-                  // Update selected date if needed
-                  if (updatedItem.date.year != _selectedDate.year || 
-                      updatedItem.date.month != _selectedDate.month || 
-                      updatedItem.date.day != _selectedDate.day) {
-                    _selectedDate = DateTime(updatedItem.date.year, updatedItem.date.month, updatedItem.date.day);
-                  }
-                });
-              }
+            setState(() {
+              _plannerItems = updatedItems;
             });
           }
           
-          // Show success message after a short delay
+          // Show success message
           if (mounted) {
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (mounted) {
-                final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Item updated!'),
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: themeProvider.successColor,
-                  ),
-                );
-              }
-            });
+            final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Plan deleted!'),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: themeProvider.successColor,
+              ),
+            );
           }
+          
+          // Update home widget
+          await WidgetService.updateWidget(updatedItems);
+          
         } catch (e) {
-          // Handle errors gracefully
-          print('Error updating item: $e');
+          print('Error deleting item: $e');
+          if (mounted) {
+            final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Error deleting item. Please try again.'),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: themeProvider.errorColor,
+              ),
+            );
+          }
+        }
+      } else {
+        // Handle normal update
+        // Find the item by ID instead of by reference
+        final idx = _plannerItems.indexWhere((existingItem) => existingItem.id == targetItem.id);
+        if (idx != -1) {
+          try {
+            // Update the items list first
+            final updatedItems = List<PlannerItem>.from(_plannerItems);
+            updatedItems[idx] = updatedItem;
+            
+            // Save to storage with updated items
+            await PlannerStorage.save(updatedItems);
+            
+            // Defer UI update to next frame to avoid conflicts
+            if (mounted) {
+              Future.microtask(() {
+                if (mounted) {
+                  setState(() {
+                    _plannerItems = updatedItems;
+                    
+                    // Update selected date if needed
+                    if (updatedItem.date.year != _selectedDate.year || 
+                        updatedItem.date.month != _selectedDate.month || 
+                        updatedItem.date.day != _selectedDate.day) {
+                      _selectedDate = DateTime(updatedItem.date.year, updatedItem.date.month, updatedItem.date.day);
+                    }
+                  });
+                }
+              });
+            }
+            
+            // Show success message after a short delay
+            if (mounted) {
+              Future.delayed(const Duration(milliseconds: 100), () {
+                if (mounted) {
+                  final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Item updated!'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: themeProvider.successColor,
+                    ),
+                  );
+                }
+              });
+            }
+          } catch (e) {
+            // Handle errors gracefully
+            print('Error updating item: $e');
+            if (mounted) {
+              Future.delayed(const Duration(milliseconds: 100), () {
+                if (mounted) {
+                  final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Error updating item. Please try again.'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: themeProvider.errorColor,
+                    ),
+                  );
+                }
+              });
+            }
+          }
+        } else {
+          // Show error to user
           if (mounted) {
             Future.delayed(const Duration(milliseconds: 100), () {
               if (mounted) {
                 final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('Error updating item. Please try again.'),
+                    content: const Text('Error: Could not find item to update'),
                     behavior: SnackBarBehavior.floating,
                     backgroundColor: themeProvider.errorColor,
                   ),
@@ -1179,22 +1243,6 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             });
           }
-        }
-      } else {
-        // Show error to user
-        if (mounted) {
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) {
-              final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Error: Could not find item to update'),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: themeProvider.errorColor,
-                ),
-              );
-            }
-          });
         }
       }
     }
@@ -3551,6 +3599,7 @@ class AddPlannerItemForm extends StatefulWidget {
   final PlannerItem? initialItem; // Add support for editing existing items
   final int? initialType; // Add support for setting initial type
   final List<PlannerItem>? existingItems; // Add support for duplicate validation
+  final void Function(PlannerItem)? onDelete; // Add support for deleting items
   const AddPlannerItemForm({
     Key? key, 
     required this.onSave, 
@@ -3558,6 +3607,7 @@ class AddPlannerItemForm extends StatefulWidget {
     this.initialItem,
     this.initialType,
     this.existingItems,
+    this.onDelete,
   }) : super(key: key);
   @override
   State<AddPlannerItemForm> createState() => _AddPlannerItemFormState();
@@ -4349,65 +4399,72 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
       builder: (context, themeProvider, child) {
         return Opacity(
           opacity: _hasTime ? 1.0 : 0.5,
-          child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 6),
+            child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Text('Reminder', style: TextStyle(fontWeight: FontWeight.w400, fontSize: 13, color: themeProvider.textColor)),
+                  const Spacer(),
+                  Transform.scale(
+                    scale: 0.7,
+                    child: Switch(
+        value: _reminder,
+                      activeColor: themeProvider.shade400,
+                        onChanged: _hasTime ? (val) => _setReminder(val) : null,
+                    ),
+                  ),
+                ],
+              ),
+                if (_reminder && _hasTime) ...[
             const SizedBox(height: 2),
-            Row(
-              children: [
-                Text('Reminder', style: TextStyle(fontWeight: FontWeight.w400, fontSize: 13, color: themeProvider.textColor)),
-                const Spacer(),
-                Transform.scale(
-                  scale: 0.7,
-                  child: Switch(
-      value: _reminder,
-                    activeColor: themeProvider.shade400,
-                      onChanged: _hasTime ? (val) => _setReminder(val) : null,
+            Container(
+              height: 28,
+              decoration: BoxDecoration(
+                color: themeProvider.dividerColor,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: themeProvider.dividerColor),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  value: _reminderOffset,
+                  icon: Icon(Icons.keyboard_arrow_down, size: 14, color: themeProvider.shade400),
+                  style: TextStyle(fontSize: 12, color: themeProvider.textColor),
+                  isExpanded: true,
+                    items: reminderOptions.map((minutes) {
+                      String label;
+                      if (minutes < 60) {
+                        label = '${minutes}m before';
+                      } else if (minutes == 60) {
+                        label = '1h before';
+                      } else {
+                        label = '${minutes ~/ 60}h before';
+                      }
+                      return DropdownMenuItem<int>(
+                        value: minutes,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Text(label, style: TextStyle(color: themeProvider.textColor, fontSize: 12)),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        _setReminderOffset(value);
+                      }
+                    },
                   ),
                 ),
-              ],
-            ),
-              if (_reminder && _hasTime) ...[
-          const SizedBox(height: 2),
-          Container(
-            height: 28,
-            decoration: BoxDecoration(
-              color: themeProvider.dividerColor,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: themeProvider.dividerColor),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<int>(
-                value: _reminderOffset,
-                icon: Icon(Icons.keyboard_arrow_down, size: 14, color: themeProvider.shade400),
-                style: TextStyle(fontSize: 12, color: themeProvider.textColor),
-                isExpanded: true,
-                  items: reminderOptions.map((minutes) {
-                    String label;
-                    if (minutes < 60) {
-                      label = '${minutes}m before';
-                    } else if (minutes == 60) {
-                      label = '1h before';
-                    } else {
-                      label = '${minutes ~/ 60}h before';
-                    }
-                    return DropdownMenuItem<int>(
-                      value: minutes,
-                      child: Text(label, style: TextStyle(color: themeProvider.textColor, fontSize: 12)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      _setReminderOffset(value);
-                    }
-                  },
-                ),
               ),
-            ),
+              
+          ],
         ],
-      ],
+            ),
           ),
-    );
+        );
       },
     );
   }
@@ -4730,8 +4787,56 @@ class _AddPlannerItemFormState extends State<AddPlannerItemForm> {
                 _buildFields(themeProvider),
                 const SizedBox(height: 4),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    if (_isEditing)
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          textStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          shadowColor: Colors.red,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        ),
+                        onPressed: () {
+                          // Show confirmation dialog before deleting
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: themeProvider.cardColor,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              title: Text('Delete Plan', style: TextStyle(color: themeProvider.textColor)),
+                              content: Text('Are you sure you want to delete "${_nameController.text.trim()}"? This action cannot be undone.', style: TextStyle(color: themeProvider.textColorSecondary)),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: Text('Cancel', style: TextStyle(color: themeProvider.textColorSecondary)),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop(); // Close confirmation dialog
+                                    Navigator.of(context).pop(); // Close the form
+                                    // Call the delete callback directly
+                                    if (widget.onDelete != null && widget.initialItem != null) {
+                                      widget.onDelete!(widget.initialItem!);
+                                    }
+                                  },
+                                  child: const Text('Delete'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: const Text('Delete'),
+                      )
+                    else
+                      const SizedBox.shrink(), // Empty space when not editing
                     if (_isEditing)
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
